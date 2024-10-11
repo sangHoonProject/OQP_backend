@@ -21,7 +21,6 @@ public class Converter {
                 .nickname(request.getNickname())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .userId(request.getUserId())
-                .email(request.getEmail())
                 .star(0)
                 .postingCount(0)
                 .role(Role.ROLE_USER)
