@@ -1,6 +1,6 @@
-package com.example.oqp.conmmon.security.jwt;
+package com.example.oqp.common.security.jwt;
 
-import com.example.oqp.conmmon.security.custom.CustomUserDetails;
+import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.model.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -50,6 +50,7 @@ public class JwtUtil {
         claims.put("id", byUserId.getId());
         claims.put("auth", byUserId.getRole().name());
         claims.put("exp", expired.toString());
+        claims.put("subject", byUserId.getNickname());
 
         return Jwts.builder()
                 .setSubject(String.valueOf(byUserId.getId()))
@@ -86,7 +87,8 @@ public class JwtUtil {
     public Boolean validation(String token) {
         SecretKey key = Keys.hmacShaKeyFor(token.getBytes());
         try{
-            Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+            Claims body = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+            log.info("body:{}", body);
             return true;
         }catch (Exception e){
             return false;
@@ -94,20 +96,21 @@ public class JwtUtil {
     }
 
     public Claims parseToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(token.getBytes());
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
     }
 
     public Authentication getAuthenticate(String token){
         Claims claims = parseToken(token);
-        String id = claims.get("id", String.class);
-        Long userId = Long.parseLong(id);
+        Long id = claims.get("id", Integer.class).longValue();
 
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user not found"));
-        List<SimpleGrantedAuthority> auth = Arrays.stream(new String[]{user.getRole().name()})
+        UserEntity user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("user not found"));
+        List<SimpleGrantedAuthority> auth = Arrays.stream(new String[]{claims.get("auth").toString()})
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        return new UsernamePasswordAuthenticationToken(user.getUserId(), token, auth);
+        CustomUserDetails customUser = new CustomUserDetails(user);
+
+        return new UsernamePasswordAuthenticationToken(customUser, token, auth);
     }
 }
