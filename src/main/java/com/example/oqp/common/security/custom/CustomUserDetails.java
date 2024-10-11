@@ -1,4 +1,4 @@
-package com.example.oqp.conmmon.security.custom;
+package com.example.oqp.common.security.custom;
 
 import com.example.oqp.user.model.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
