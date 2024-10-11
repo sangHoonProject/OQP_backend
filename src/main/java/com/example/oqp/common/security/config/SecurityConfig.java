@@ -1,7 +1,7 @@
-package com.example.oqp.conmmon.security.config;
+package com.example.oqp.common.security.config;
 
-import com.example.oqp.conmmon.security.custom.CustomUserDetailsService;
-import com.example.oqp.conmmon.security.jwt.JwtFilter;
+import com.example.oqp.common.security.custom.CustomUserDetailsService;
+import com.example.oqp.common.security.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
