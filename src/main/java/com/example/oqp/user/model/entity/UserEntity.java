@@ -55,8 +55,4 @@ public class UserEntity {
     @Column(nullable = false, name = "name")
     @Schema(description = "사용자 이름", example = "홍길동")
     private String name;
-
-    @Column(nullable = false, name = "email")
-    @Schema(description = "사용자 이메일", example = "hong@gmail.com")
-    private String email;
 }
