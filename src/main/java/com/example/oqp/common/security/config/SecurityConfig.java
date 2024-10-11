@@ -1,5 +1,8 @@
 package com.example.oqp.conmmon.security.config;
 
+import com.example.oqp.conmmon.security.custom.CustomUserDetailsService;
+import com.example.oqp.conmmon.security.jwt.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,9 +12,14 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtFilter jwtFilter;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -21,6 +29,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .userDetailsService(customUserDetailsService);
+        http
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http
                 .cors(AbstractHttpConfigurer::disable);
         http
                 .csrf(AbstractHttpConfigurer::disable);
@@ -28,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> {
                     auth
                             .requestMatchers("/**").permitAll()
+                            .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                             .anyRequest().authenticated();
                 });
         http
