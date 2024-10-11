@@ -1,4 +1,4 @@
-package com.example.oqp.conmmon.config;
+package com.example.oqp.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
