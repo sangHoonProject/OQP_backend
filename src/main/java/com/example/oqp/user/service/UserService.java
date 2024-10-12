@@ -50,17 +50,22 @@ public class UserService {
     }
 
     public JwtLoginResponse login(LoginRequest request) {
-        UserEntity byUserId = userRepository.findByUserId(request.getUserId());
+        try{
+            UserEntity byUserId = userRepository.findByUserId(request.getUserId());
 
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword()));
-        String accessToken = jwtUtil.generateAccessToken(authenticate);
-        String refreshToken = jwtUtil.generateRefreshToken(authenticate);
+            Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword()));
+            String accessToken = jwtUtil.generateAccessToken(authenticate);
+            String refreshToken = jwtUtil.generateRefreshToken(authenticate);
 
-        return JwtLoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .nickname(byUserId.getNickname())
-                .build();
+            return JwtLoginResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .nickname(byUserId.getNickname())
+                    .build();
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
 
@@ -77,7 +82,7 @@ public class UserService {
             Claims claims = jwtUtil.parseToken(token);
             log.info("claim : {}", claims.toString());
 
-            Date exp = new Date(((Integer) claims.get("exp")).longValue() * 1000);
+            Date exp = new Date(claims.get("exp", Long.class) * 1000);
             if (exp.after(new Date())) {
                 Long id = claims.get("id", Long.class);
                 UserEntity user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User Not Found"));
@@ -117,4 +122,40 @@ public class UserService {
                 .build();
     }
 
+    public UserEntity found(String nickname) {
+        try{
+            UserEntity byNickname = userRepository.findByNickname(nickname);
+
+            if(byNickname == null){
+                throw new CustomException(ErrorCode.USER_NOT_FOUND);
+            }
+            return byNickname;
+        }catch (Exception e){
+            log.error("UserService found Fail : {}", e.getMessage());
+            throw new RuntimeException("UserService found Fail", e);
+        }
+    }
+
+    public boolean delete(Long id, HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if(header != null && header.startsWith("Bearer ")){
+            String token = header.substring(7);
+            Claims claims = jwtUtil.parseToken(token);
+
+            Long tokenUserId = Long.valueOf(claims.get("id", Integer.class));
+            UserEntity tokenUser = userRepository.findById(tokenUserId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            UserEntity user = userRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            if(user.equals(tokenUser)){
+                userRepository.delete(user);
+                return true;
+            }else{
+                throw new CustomException(ErrorCode.USER_NOT_SAME);
+            }
+
+        }else{
+            throw new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
+        }
+    }
 }
