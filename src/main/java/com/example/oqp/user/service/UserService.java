@@ -10,6 +10,7 @@ import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.common.security.jwt.JwtUtil;
 import com.example.oqp.user.controller.reqeust.LoginRequest;
 import com.example.oqp.user.controller.reqeust.RegisterRequest;
+import com.example.oqp.user.controller.reqeust.UserModifyRequest;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.model.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -75,7 +76,7 @@ public class UserService {
 
         if (token == null) {
             log.error("Refresh Token이 제공되지 않았습니다.");
-            throw new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.NOT_FOUND_TOKEN);
         }
 
         try {
@@ -155,7 +156,33 @@ public class UserService {
             }
 
         }else{
-            throw new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.NOT_FOUND_TOKEN);
+        }
+    }
+
+    public UserEntity modify(Long id, UserModifyRequest modifyRequest, HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if(header != null && header.startsWith("Bearer ")){
+            String token = header.substring(7);
+            Claims claims = jwtUtil.parseToken(token);
+
+            Long tokenUserId = Long.valueOf(claims.get("id", Integer.class));
+            UserEntity tokenUser = userRepository.findById(tokenUserId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            UserEntity user = userRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            if(user.equals(tokenUser)){
+                UserEntity modifyUser = UserModifyRequest.patch(user, modifyRequest);
+
+                String encode = passwordEncoder.encode(modifyUser.getPassword());
+                modifyUser.setPassword(encode);
+
+                UserEntity save = userRepository.save(modifyUser);
+                return save;
+            }else{
+                throw new CustomException(ErrorCode.USER_NOT_SAME);
+            }
+        }else{
+            throw new CustomException(ErrorCode.NOT_FOUND_TOKEN);
         }
     }
 }
