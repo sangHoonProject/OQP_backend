@@ -47,6 +47,10 @@ public class ContentEntity {
     @Schema(description = "카테고리")
     private String category;
 
+    @Column(name = "rating")
+    @Schema(description = "콘텐츠 별점")
+    private Integer rating;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity userId;
