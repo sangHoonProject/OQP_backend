@@ -51,7 +51,10 @@ public class UserController {
         return (login != null) ? ResponseEntity.ok().body(login) : ResponseEntity.badRequest().build();
     }
 
-    @Operation(summary = "access token 재발급", description = "refresh token 을 사용해서 access token 을 재발급함 ")
+    @Operation(summary = "access token 재발급",
+            description = "refresh token 을 사용해서 access token, refresh token 재발급 기존 refresh token은 만료" +
+                    "정석은 jwt토큰을 DB에 저장해야함"
+    )
     @PostMapping("/refresh")
     public ResponseEntity<JwtAccessResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
         JwtAccessResponse accessToken = userService.refresh(request);
