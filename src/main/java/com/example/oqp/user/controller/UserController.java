@@ -4,6 +4,7 @@ import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.user.controller.reqeust.LoginRequest;
 import com.example.oqp.user.controller.reqeust.RegisterRequest;
+import com.example.oqp.user.controller.reqeust.UserModifyRequest;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,7 +56,8 @@ public class UserController {
 
     @Operation(summary = "access token 재발급",
             description = "refresh token 을 사용해서 access token, refresh token 재발급 기존 refresh token은 만료" +
-                    "정석은 jwt토큰을 DB에 저장해야함"
+                    "정석은 jwt토큰을 DB에 저장해야함",
+            security = {@SecurityRequirement(name = "Refresh-Token")}
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "재발급 성공 시 200 반환"),
@@ -76,22 +78,27 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "사용자 조회 성공시 200반환"),
             @ApiResponse(responseCode = "407", description = "사용자를 찾지 못하면ㄴ 407반환")
     })
-    @GetMapping("/{nickname}")
+    @GetMapping("/search/{nickname}")
     public ResponseEntity<?> found(@PathVariable String nickname){
         UserEntity found = userService.found(nickname);
         return ResponseEntity.ok().body(found);
     }
 
-    @Operation(summary = "사용자 계정 삭제")
+    @Operation(summary = "사용자 계정 삭제", security = @SecurityRequirement(name = "Authorization"))
     @Parameter(name = "id", description = "사용자 고유키(id)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "삭제가 완료되면 200 반환"),
             @ApiResponse(responseCode = "407", description = "사용자를 찾을 수 없으면 407 반환"),
             @ApiResponse(responseCode = "408", description = "삭제하려는 사용자와 다른 사용자면 408 반환")
     })
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request){
         boolean delete = userService.delete(id, request);
         return ResponseEntity.ok().body("삭제 성공");
+    }
+
+    @PatchMapping("/modify/{id}")
+    public ResponseEntity<?> modify(@PathVariable Long id, @RequestBody UserModifyRequest modifyRequest, HttpServletRequest request){
+        return null;
     }
 }
