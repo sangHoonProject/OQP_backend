@@ -7,6 +7,7 @@ import com.example.oqp.user.controller.reqeust.RegisterRequest;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -39,7 +40,8 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "로그인 성공시 200 반환"),
             @ApiResponse(responseCode = "400", description = "로그인 실패시 400 반환"),
-            @ApiResponse(responseCode = "409", description = "id or nickname 이미 가입된 데이터로 가입 요청시 반환")
+            @ApiResponse(responseCode = "410", description = "이미 가입된 user id로 가입 요청 시 410 반환"),
+            @ApiResponse(responseCode = "411", description = "이미 가입된 nickname으로 가입 요청시 411 반환")
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
@@ -57,7 +59,8 @@ public class UserController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "재발급 성공 시 200 반환"),
-            @ApiResponse(responseCode = "408", description = "토큰 만료 또는 토큰이 존재하지 않을 시 408 반환")
+            @ApiResponse(responseCode = "408", description = "refresh 토큰이 없을경우 408 반환"),
+            @ApiResponse(responseCode = "409", description = "refresh 토큰 만료시 409 반환")
     })
     @PostMapping("/refresh")
     public ResponseEntity<JwtAccessResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -65,5 +68,30 @@ public class UserController {
 
         response.setHeader("Authorization", accessToken.getAccessToken());
         return ResponseEntity.status(HttpStatus.OK).body(accessToken);
+    }
+
+    @Operation(summary = "사용자 찾기", description = "nickname을 이용해서 사용자를 조회")
+    @Parameter(name = "nickname", description = "사용자 닉네임")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "사용자 조회 성공시 200반환"),
+            @ApiResponse(responseCode = "407", description = "사용자를 찾지 못하면ㄴ 407반환")
+    })
+    @GetMapping("/{nickname}")
+    public ResponseEntity<?> found(@PathVariable String nickname){
+        UserEntity found = userService.found(nickname);
+        return ResponseEntity.ok().body(found);
+    }
+
+    @Operation(summary = "사용자 계정 삭제")
+    @Parameter(name = "id", description = "사용자 고유키(id)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "삭제가 완료되면 200 반환"),
+            @ApiResponse(responseCode = "407", description = "사용자를 찾을 수 없으면 407 반환"),
+            @ApiResponse(responseCode = "408", description = "삭제하려는 사용자와 다른 사용자면 408 반환")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request){
+        boolean delete = userService.delete(id, request);
+        return ResponseEntity.ok().body("삭제 성공");
     }
 }
