@@ -28,21 +28,20 @@ public class UserController {
 
     @Operation(summary = "사용자 회원가입", description = "registerRequest 를 사용해서 사용자 등록")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원가입 성공시 200"),
-            @ApiResponse(responseCode = "400", description = "회원가입 실패시 400")
+            @ApiResponse(responseCode = "200", description = "회원가입 성공시 200 반환"),
+            @ApiResponse(responseCode = "411", description = "이미 가입된 user id로 가입 요청 시 411 반환"),
+            @ApiResponse(responseCode = "412", description = "이미 가입된 nickname으로 가입 요청시 412 반환")
     })
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         UserEntity register = userService.register(registerRequest);
-        return (register != null) ? ResponseEntity.ok().body(register) : ResponseEntity.badRequest().build();
+        return ResponseEntity.status(HttpStatus.OK).body(register);
     }
 
     @Operation(summary = "사용자 로그인", description = "LoginRequest 를 사용해서 사용자 로그인 후 토큰 발급")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "로그인 성공시 200 반환"),
             @ApiResponse(responseCode = "400", description = "로그인 실패시 400 반환"),
-            @ApiResponse(responseCode = "410", description = "이미 가입된 user id로 가입 요청 시 410 반환"),
-            @ApiResponse(responseCode = "411", description = "이미 가입된 nickname으로 가입 요청시 411 반환")
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
@@ -51,7 +50,7 @@ public class UserController {
         response.setHeader("Authorization", login.getAccessToken());
         response.setHeader("Refresh-Token", login.getRefreshToken());
 
-        return (login != null) ? ResponseEntity.ok().body(login) : ResponseEntity.badRequest().build();
+        return (login != null) ? ResponseEntity.ok().body(login) : ResponseEntity.badRequest().body("로그인 실패");
     }
 
     @Operation(summary = "access token 재발급",
@@ -61,8 +60,8 @@ public class UserController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "재발급 성공 시 200 반환"),
-            @ApiResponse(responseCode = "408", description = "refresh 토큰이 없을경우 408 반환"),
-            @ApiResponse(responseCode = "409", description = "refresh 토큰 만료시 409 반환")
+            @ApiResponse(responseCode = "409", description = "토큰이 없을경우 409 반환"),
+            @ApiResponse(responseCode = "410", description = "refresh 토큰 만료시 410 반환")
     })
     @PostMapping("/refresh")
     public ResponseEntity<JwtAccessResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -76,7 +75,7 @@ public class UserController {
     @Parameter(name = "nickname", description = "사용자 닉네임")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "사용자 조회 성공시 200반환"),
-            @ApiResponse(responseCode = "407", description = "사용자를 찾지 못하면ㄴ 407반환")
+            @ApiResponse(responseCode = "407", description = "사용자를 찾지 못하면 407반환")
     })
     @GetMapping("/search/{nickname}")
     public ResponseEntity<?> found(@PathVariable String nickname){
@@ -97,8 +96,19 @@ public class UserController {
         return ResponseEntity.ok().body("삭제 성공");
     }
 
+    @Operation(summary = "사용자 계정 정보 수정", description = "해더에 있는 토큰으로 같은 사용자인지 검증하고 맞다면 정보를 수정함",
+            security = @SecurityRequirement(name = "Authorization")
+    )
+    @Parameter(name = "id", description = "사용자 계정 고유키")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공시 200 반환"),
+            @ApiResponse(responseCode = "408", description = "사용자가 같지 않을 시 408 반환"),
+            @ApiResponse(responseCode = "409", description = "토큰이 없을 시 409 반환")
+    })
     @PatchMapping("/modify/{id}")
     public ResponseEntity<?> modify(@PathVariable Long id, @RequestBody UserModifyRequest modifyRequest, HttpServletRequest request){
-        return null;
+        UserEntity modify = userService.modify(id, modifyRequest, request);
+
+        return ResponseEntity.ok().body(modify);
     }
 }
