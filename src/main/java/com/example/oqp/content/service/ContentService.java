@@ -1,7 +1,7 @@
 package com.example.oqp.content.service;
 
-import com.example.oqp.common.pagination.Pagination;
-import com.example.oqp.common.pagination.PaginationResponse;
+import com.example.oqp.content.pagination.Pagination;
+import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.model.entity.ContentEntity;
 import com.example.oqp.content.model.repository.ContentRepository;
 import lombok.RequiredArgsConstructor;
