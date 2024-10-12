@@ -55,6 +55,10 @@ public class UserController {
             description = "refresh token 을 사용해서 access token, refresh token 재발급 기존 refresh token은 만료" +
                     "정석은 jwt토큰을 DB에 저장해야함"
     )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "재발급 성공 시 200 반환"),
+            @ApiResponse(responseCode = "408", description = "토큰 만료 또는 토큰이 존재하지 않을 시 408 반환")
+    })
     @PostMapping("/refresh")
     public ResponseEntity<JwtAccessResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
         JwtAccessResponse accessToken = userService.refresh(request);
