@@ -19,6 +19,7 @@ public class SwaggerConfig {
                 .components(new Components()
                         .addSecuritySchemes("Authorization", new SecurityScheme()
                                 .name("Authorization")
+                                .description("access token은 Bearer 을 붙혀서 등록한다 ex. (Bearer 토큰값)")
                                 .type(SecurityScheme.Type.APIKEY)
                                 .in(SecurityScheme.In.HEADER)
                                 .bearerFormat("JWT")
