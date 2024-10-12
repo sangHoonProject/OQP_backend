@@ -75,7 +75,7 @@ public class JwtUtil {
         Claims claims = Jwts.claims();
         claims.put("id", byName.getId());
         claims.put("auth", byName.getRole().name());
-        claims.put("exp", _expired.getTime());
+        claims.put("exp", _expired.getTime() / 1000);
 
         return Jwts.builder()
                 .signWith(key, SignatureAlgorithm.HS256)
