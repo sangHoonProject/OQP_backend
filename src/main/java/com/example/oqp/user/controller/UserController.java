@@ -96,7 +96,7 @@ public class UserController {
         return ResponseEntity.ok().body("삭제 성공");
     }
 
-    @Operation(summary = "사용자 계정 정보 수정", description = "해더에 있는 토큰으로 같은 사용자인지 검증하고 맞다면 정보를 수정함",
+    @Operation(summary = "사용자 계정 정보 수정", description = "해더에 있는 토큰으로 같은 사용자인지 검증하고 맞다면 정보를 수정함 수정하지 않는 정보는 null로 요청하면 됌",
             security = @SecurityRequirement(name = "Authorization")
     )
     @Parameter(name = "id", description = "사용자 계정 고유키")
