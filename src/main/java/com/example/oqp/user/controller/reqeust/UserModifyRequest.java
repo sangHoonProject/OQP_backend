@@ -26,19 +26,19 @@ public class UserModifyRequest {
         }
 
         if(request.getEmail() != null) {
-            user.setUserId(request.getUserId());
+            user.setEmail(request.getEmail());
         }
 
         if(request.getName() != null) {
-            user.setUserId(request.getUserId());
+            user.setName(request.getName());
         }
 
         if(request.getPassword() != null) {
-            user.setUserId(request.getUserId());
+            user.setPassword(request.getPassword());
         }
 
         if(request.getNickname() != null) {
-            user.setUserId(request.getUserId());
+            user.setNickname(request.getNickname());
         }
 
         return user;
