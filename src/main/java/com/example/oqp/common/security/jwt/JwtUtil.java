@@ -49,7 +49,7 @@ public class JwtUtil {
         Claims claims = Jwts.claims();
         claims.put("id", byUserId.getId());
         claims.put("auth", byUserId.getRole().name());
-        claims.put("exp", expired.toString());
+        claims.put("exp", _expired.getTime() / 1000);
         claims.put("subject", byUserId.getNickname());
 
         return Jwts.builder()
@@ -75,7 +75,7 @@ public class JwtUtil {
         Claims claims = Jwts.claims();
         claims.put("id", byName.getId());
         claims.put("auth", byName.getRole().name());
-        claims.put("exp", expired.toString());
+        claims.put("exp", _expired.getTime());
 
         return Jwts.builder()
                 .signWith(key, SignatureAlgorithm.HS256)
