@@ -1,6 +1,6 @@
 package com.example.oqp.content.controller;
 
-import com.example.oqp.common.pagination.PaginationResponse;
+import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.model.entity.ContentEntity;
 import com.example.oqp.content.service.ContentService;
 import lombok.RequiredArgsConstructor;
