@@ -70,7 +70,7 @@ public class UserService {
 
         if (token == null) {
             log.error("Refresh Token이 제공되지 않았습니다.");
-            throw new RuntimeException("Refresh Token이 제공되지 않았습니다.");
+            throw new CustomException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
         }
 
         try {
@@ -86,13 +86,15 @@ public class UserService {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                 String accessToken = jwtUtil.generateAccessToken(authentication);
+                String refreshToken = jwtUtil.generateRefreshToken(authentication);
 
                 return JwtAccessResponse.builder()
                         .accessToken(accessToken)
+                        .refreshToken(refreshToken)
                         .build();
             } else {
                 log.error("Refresh Token 만료");
-                throw new RuntimeException("Refresh Token 만료");
+                throw new CustomException(ErrorCode.EXPIRED_REFRESH_TOKEN);
             }
         } catch (Exception e) {
             log.error("UserService refresh Fail : {}", e.getMessage());
