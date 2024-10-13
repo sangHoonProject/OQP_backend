@@ -4,10 +4,12 @@ import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.model.entity.ContentEntity;
 import com.example.oqp.content.service.ContentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,6 +17,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -38,4 +41,15 @@ public class ContentController {
 
         return ResponseEntity.ok(all);
     }
+
+    @Operation(summary = "유저 닉네임 또는 콘텐츠 검색", security = {
+            @SecurityRequirement(name = "Authorization")
+    })
+    @Parameter(name = "keyword", description = "검색할 키워드 입력")
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam(name = "keyword") String keyword){
+        contentService.search(keyword);
+        return null;
+    }
+    
 }
