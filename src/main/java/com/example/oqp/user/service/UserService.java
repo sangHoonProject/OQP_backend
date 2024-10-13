@@ -227,7 +227,7 @@ public class UserService {
                 mimeMessageHelper.setSubject("임시 비밀번호 발급 이메일");
 
                 mimeMessageHelper.setText(user.getName() + "님 새로 발급된 비밀번호는 " + newPassword
-                        + "발급 받은 비밀번호로 로그인 후 사용자 정보 수정으로 비밀번호 재설정");
+                        + " 발급 받은 비밀번호로 로그인 후 사용자 정보 수정으로 비밀번호 재설정");
 
                 mimeMessageHelper.setFrom(new InternetAddress(from));
 
