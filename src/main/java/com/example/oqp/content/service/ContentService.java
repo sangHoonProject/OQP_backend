@@ -33,4 +33,8 @@ public class ContentService {
 
         return page;
     }
+
+    public void search(String keyword) {
+
+    }
 }
