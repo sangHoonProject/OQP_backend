@@ -145,11 +145,20 @@ public class UserController {
         return ResponseEntity.ok().body(modify);
     }
 
+    @Operation(summary = "임시 비밀번호 발급", description = "비밀번호를 분실했을 경우 가입할때 사용한 이메일로 임시 비밀번호를 발급해줌")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공시 200 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
+            }),
+            @ApiResponse(responseCode = "407", description = "사용자를 찾지 못할 경우 407 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            })
+    })
     @PostMapping("/send-email")
     public ResponseEntity<?> sendEmail(@RequestBody FindByPasswordRequest request){
 
         userService.sendEmail(request);
 
-        return ResponseEntity.ok().body(request);
+        return ResponseEntity.ok().body("이메일이 전송되었습니다.");
     }
 }
