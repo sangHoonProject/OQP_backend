@@ -3,9 +3,7 @@ package com.example.oqp.user.controller;
 import com.example.oqp.common.error.response.ErrorResponse;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
-import com.example.oqp.user.controller.reqeust.LoginRequest;
-import com.example.oqp.user.controller.reqeust.RegisterRequest;
-import com.example.oqp.user.controller.reqeust.UserModifyRequest;
+import com.example.oqp.user.controller.reqeust.*;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -145,5 +143,13 @@ public class UserController {
         UserEntity modify = userService.modify(id, modifyRequest, request);
 
         return ResponseEntity.ok().body(modify);
+    }
+
+    @PostMapping("/send-email")
+    public ResponseEntity<?> sendEmail(@RequestBody FindByPasswordRequest request){
+
+        userService.sendEmail(request);
+
+        return ResponseEntity.ok().body(request);
     }
 }
