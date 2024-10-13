@@ -193,45 +193,51 @@ public class UserService {
         }
     }
 
-    public void sendEmail(FindByPasswordRequest request){
-        String[] element = {
-                "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
-                "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
-                "Y", "Z"
-        };
+    public void sendEmail(FindByPasswordRequest request) {
+        UserEntity user = userRepository.findByUserId(request.getUserId());
+        log.info("user : {}", user);
 
-        String newPassword = "";
-        int idx = 0;
-        for(int i = 0 ; i < 10; i++){
-            idx = (int) (element.length * Math.random());
-            newPassword += element[idx];
-        }
-        log.info("newPassword : {}", newPassword);
+        if (user != null && user.getEmail().equals(request.getEmail())) {
+            String[] element = {
+                    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
+                    "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
+                    "Y", "Z"
+            };
 
-        String encode = passwordEncoder.encode(newPassword);
-        UserEntity byUserId = userRepository.findByUserId(request.getUserId());
-        log.info("user : {}", byUserId);
+            String newPassword = "";
+            int idx = 0;
 
-        byUserId.setPassword(encode);
-        userRepository.save(byUserId);
+            for (int i = 0; i < 10; i++) {
+                idx = (int) (element.length * Math.random());
+                newPassword += element[idx];
+            }
+            log.info("newPassword : {}", newPassword);
 
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        try{
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-            mimeMessageHelper.setTo(request.getEmail());
+            String encode = passwordEncoder.encode(newPassword);
 
-            mimeMessageHelper.setSubject("임시 비밀번호 발급 이메일");
+            user.setPassword(encode);
+            userRepository.save(user);
 
-            mimeMessageHelper.setText(byUserId.getName() + "님 새로 발급된 비밀번호는 " + newPassword
-                    + "발급 받은 비밀번호로 로그인 후 사용자 정보 수정으로 비밀번호 재설정");
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            try {
+                MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+                mimeMessageHelper.setTo(request.getEmail());
 
-            mimeMessageHelper.setFrom(new InternetAddress(from));
+                mimeMessageHelper.setSubject("임시 비밀번호 발급 이메일");
 
-            mailSender.send(mimeMessage);
+                mimeMessageHelper.setText(user.getName() + "님 새로 발급된 비밀번호는 " + newPassword
+                        + "발급 받은 비밀번호로 로그인 후 사용자 정보 수정으로 비밀번호 재설정");
 
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
+                mimeMessageHelper.setFrom(new InternetAddress(from));
+
+                mailSender.send(mimeMessage);
+
+            } catch (MessagingException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
     }
 }
