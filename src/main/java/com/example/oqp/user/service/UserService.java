@@ -8,15 +8,19 @@ import com.example.oqp.common.security.custom.CustomUserDetailsService;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.common.security.jwt.JwtUtil;
-import com.example.oqp.user.controller.reqeust.LoginRequest;
-import com.example.oqp.user.controller.reqeust.RegisterRequest;
-import com.example.oqp.user.controller.reqeust.UserModifyRequest;
+import com.example.oqp.user.controller.reqeust.*;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.model.repository.UserRepository;
 import io.jsonwebtoken.Claims;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,6 +40,9 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
+    private final JavaMailSender mailSender;
+    @Value("${spring.mail.username}")
+    private String from;
 
     public UserEntity register(RegisterRequest registerRequest) {
 
@@ -183,6 +190,48 @@ public class UserService {
             }
         }else{
             throw new CustomException(ErrorCode.NOT_FOUND_TOKEN);
+        }
+    }
+
+    public void sendEmail(FindByPasswordRequest request){
+        String[] element = {
+                "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
+                "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
+                "Y", "Z"
+        };
+
+        String newPassword = "";
+        int idx = 0;
+        for(int i = 0 ; i < 10; i++){
+            idx = (int) (element.length * Math.random());
+            newPassword += element[idx];
+        }
+        log.info("newPassword : {}", newPassword);
+
+        String encode = passwordEncoder.encode(newPassword);
+        UserEntity byUserId = userRepository.findByUserId(request.getUserId());
+        log.info("user : {}", byUserId);
+
+        byUserId.setPassword(encode);
+        userRepository.save(byUserId);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        try{
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            mimeMessageHelper.setTo(request.getEmail());
+
+            mimeMessageHelper.setSubject("임시 비밀번호 발급 이메일");
+
+            mimeMessageHelper.setText(byUserId.getName() + "님 새로 발급된 비밀번호는 " + newPassword
+                    + "발급 받은 비밀번호로 로그인 후 사용자 정보 수정으로 비밀번호 재설정");
+
+            mimeMessageHelper.setFrom(new InternetAddress(from));
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
         }
     }
 }
