@@ -47,10 +47,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable);
         http
                 .formLogin(AbstractHttpConfigurer::disable);
-        http
-                .headers(auth -> {
-                    auth.frameOptions().disable();
-                });
+
         return http.build();
     }
 
