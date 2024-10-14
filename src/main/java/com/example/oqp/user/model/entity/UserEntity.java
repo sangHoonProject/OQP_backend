@@ -63,7 +63,7 @@ public class UserEntity {
     @Schema(description = "사용자 이메일", example = "hong@gmail.com")
     private String email;
 
-    @OneToMany(mappedBy = "userId")
+    @OneToMany(mappedBy = "userId", fetch = FetchType.EAGER) // 즉시 로딩으로 인한 성능 문제가 있을 수 있음
     @Schema(description = "퀴즈 콘텐츠")
     private List<ContentEntity> content;
 }
