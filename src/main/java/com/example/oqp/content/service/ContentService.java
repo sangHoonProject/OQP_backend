@@ -2,6 +2,7 @@ package com.example.oqp.content.service;
 
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
+import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.model.repository.CustomContentRepository;
 import com.example.oqp.content.pagination.Pagination;
 import com.example.oqp.content.pagination.PaginationResponse;
@@ -50,7 +51,7 @@ public class ContentService {
         return page;
     }
 
-    public ContentEntity upload(MultipartFile file, ContentAddRequest request, CustomUserDetails userDetails) throws IOException {
+    public ContentDto upload(MultipartFile file, ContentAddRequest request, CustomUserDetails userDetails) throws IOException {
         File directory = new File(UPLOAD_PATH);
         if (!directory.exists()) {
             directory.mkdirs();
@@ -63,10 +64,21 @@ public class ContentService {
 
         String userId = userDetails.getUsername();
         UserEntity user = userRepository.findByUserId(userId);
+        user.setPostingCount(user.getPostingCount() + 1);
+        userRepository.save(user);
         log.info("user : {}", user);
 
         ContentEntity content = ContentAddRequest.toEntity(request, path.toString(), user);
-        return contentRepository.save(content);
+        ContentEntity save = contentRepository.save(content);
+        return ContentDto.builder()
+                .id(save.getId())
+                .title(save.getTitle())
+                .frontImage(content.getFrontImage())
+                .writer(content.getWriter())
+                .rating(content.getRating())
+                .category(content.getCategory())
+                .createAt(content.getCreateAt())
+                .build();
     }
 
 
