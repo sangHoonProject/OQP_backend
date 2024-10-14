@@ -3,11 +3,13 @@ package com.example.oqp.content.controller;
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
 import com.example.oqp.content.controller.response.FileUrlResponse;
+import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.model.entity.ContentEntity;
 import com.example.oqp.content.service.ContentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -52,7 +54,7 @@ public class ContentController {
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "업로드에 성공하면 200 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentEntity.class))
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentDto.class))
             })
     })
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -61,7 +63,7 @@ public class ContentController {
             @RequestPart(name = "request")ContentAddRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
             ) throws IOException {
-        ContentEntity upload = contentService.upload(file, request, userDetails);
+        ContentDto upload = contentService.upload(file, request, userDetails);
         return ResponseEntity.ok(upload);
     }
 
