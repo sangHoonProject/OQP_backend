@@ -34,9 +34,13 @@ public class JwtFilter extends GenericFilterBean {
 
             if(jwtUtil.validation(token)) {
                 Authentication authenticate = jwtUtil.getAuthenticate(token);
+                log.info("authenticate: {}", authenticate.getPrincipal().toString());
+
                 SecurityContextHolder.getContext().setAuthentication(authenticate);
+
                 CustomUserDetails principal = (CustomUserDetails) authenticate.getPrincipal();
                 log.info("user Id : {}", principal.getUsername());
+
             }else{
                 log.info("token validation failed");
             }
