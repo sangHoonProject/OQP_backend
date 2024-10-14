@@ -4,6 +4,7 @@ import com.example.oqp.common.error.response.ErrorResponse;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.user.controller.reqeust.*;
+import com.example.oqp.user.model.dto.UserDto;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -92,7 +93,7 @@ public class UserController {
     @Parameter(name = "nickname", description = "사용자 닉네임")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "사용자 조회 성공시 200반환", content =
-            @Content(mediaType = "application/json", schema = @Schema(implementation = UserEntity.class))
+            @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto  .class))
             ),
             @ApiResponse(responseCode = "407", description = "사용자를 찾지 못하면 407반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
@@ -100,7 +101,7 @@ public class UserController {
     })
     @GetMapping("/search/{nickname}")
     public ResponseEntity<?> found(@PathVariable String nickname){
-        UserEntity found = userService.found(nickname);
+        UserDto found = userService.found(nickname);
         return ResponseEntity.ok().body(found);
     }
 
