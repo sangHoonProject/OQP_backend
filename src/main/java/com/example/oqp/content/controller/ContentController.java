@@ -1,6 +1,7 @@
 package com.example.oqp.content.controller;
 
 import com.example.oqp.common.security.custom.CustomUserDetails;
+import com.example.oqp.content.controller.request.ContentAddRequest;
 import com.example.oqp.content.controller.response.FileUrlResponse;
 import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.model.entity.ContentEntity;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -45,19 +47,24 @@ public class ContentController {
         return ResponseEntity.ok(all);
     }
 
-    @Operation(summary = "썸네일 업로드", description = "파일 업로드 후 저장된 url을 리턴해줌", security = {
+    @Operation(summary = "Content 추가", description = "Content 추가", security = {
             @SecurityRequirement(name = "Authorization")
     })
-    @Parameter(name = "file", description = "파일 multipart/form-data 로 보내야함")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "업로드에 성공하면 200 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = FileUrlResponse.class))
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentEntity.class))
             })
     })
-    @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) throws IOException {
-        FileUrlResponse upload = contentService.upload(file);
+    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> upload(
+            @RequestPart(name = "file") MultipartFile file,
+            @RequestPart(name = "request")ContentAddRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+            ) throws IOException {
+        ContentEntity upload = contentService.upload(file, request, userDetails);
         return ResponseEntity.ok(upload);
     }
+
+
 
 }
