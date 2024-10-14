@@ -9,6 +9,7 @@ import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.common.security.jwt.JwtUtil;
 import com.example.oqp.user.controller.reqeust.*;
+import com.example.oqp.user.model.dto.UserDto;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.model.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -59,9 +60,12 @@ public class UserService {
 
     public JwtLoginResponse login(LoginRequest request) {
         try{
+            log.info("request user Id : {}", request.getUserId());
+            log.info("request password : {}", request.getPassword());
             UserEntity byUserId = userRepository.findByUserId(request.getUserId());
 
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword()));
+            log.info("authenticate : {}", authenticate);
             String accessToken = jwtUtil.generateAccessToken(authenticate);
             String refreshToken = jwtUtil.generateRefreshToken(authenticate);
 
@@ -130,14 +134,25 @@ public class UserService {
                 .build();
     }
 
-    public UserEntity found(String nickname) {
+    public UserDto found(String nickname) {
         try{
             UserEntity byNickname = userRepository.findByNickname(nickname);
 
             if(byNickname == null){
                 throw new CustomException(ErrorCode.USER_NOT_FOUND);
             }
-            return byNickname;
+
+            return UserDto.builder()
+                    .id(byNickname.getId())
+                    .userId(byNickname.getUserId())
+                    .password(byNickname.getPassword())
+                    .nickname(byNickname.getNickname())
+                    .email(byNickname.getEmail())
+                    .star(byNickname.getStar())
+                    .postingCount(byNickname.getPostingCount())
+                    .role(byNickname.getRole())
+                    .content(byNickname.getContent())
+                    .build();
         }catch (Exception e){
             log.error("UserService found Fail : {}", e.getMessage());
             throw new RuntimeException("UserService found Fail", e);
