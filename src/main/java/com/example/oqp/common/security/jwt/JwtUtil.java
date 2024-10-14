@@ -85,12 +85,13 @@ public class JwtUtil {
     }
 
     public Boolean validation(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(token.getBytes());
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
         try{
             Claims body = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
             log.info("body:{}", body);
             return true;
         }catch (Exception e){
+            log.error("validation Error" + e.getMessage());
             return false;
         }
     }
@@ -103,13 +104,17 @@ public class JwtUtil {
     public Authentication getAuthenticate(String token){
         Claims claims = parseToken(token);
         Long id = claims.get("id", Integer.class).longValue();
+        log.info("id:{}", id);
 
         UserEntity user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("user not found"));
+        log.info("user:{}", user);
+
         List<SimpleGrantedAuthority> auth = Arrays.stream(new String[]{claims.get("auth").toString()})
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
         CustomUserDetails customUser = new CustomUserDetails(user);
+        log.info("customUser:{}", customUser);
 
         return new UsernamePasswordAuthenticationToken(customUser, token, auth);
     }
