@@ -31,7 +31,7 @@ public class UserController {
     @Operation(summary = "사용자 회원가입", description = "registerRequest 를 사용해서 사용자 등록")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원가입 성공시 200 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserEntity.class))
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
             }),
             @ApiResponse(responseCode = "411", description = "이미 가입된 user id로 가입 요청 시 411 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
@@ -42,7 +42,7 @@ public class UserController {
     })
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
-        UserEntity register = userService.register(registerRequest);
+        UserDto register = userService.register(registerRequest);
         return ResponseEntity.status(HttpStatus.OK).body(register);
     }
 
@@ -130,7 +130,7 @@ public class UserController {
     @Parameter(name = "id", description = "사용자 계정 고유키")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공시 200 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserEntity.class))
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
             }),
             @ApiResponse(responseCode = "408", description = "사용자가 같지 않을 시 408 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
@@ -141,7 +141,7 @@ public class UserController {
     })
     @PatchMapping("/modify/{id}")
     public ResponseEntity<?> modify(@PathVariable Long id, @RequestBody UserModifyRequest modifyRequest, HttpServletRequest request){
-        UserEntity modify = userService.modify(id, modifyRequest, request);
+        UserDto modify = userService.modify(id, modifyRequest, request);
 
         return ResponseEntity.ok().body(modify);
     }
