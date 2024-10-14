@@ -1,6 +1,7 @@
 package com.example.oqp.user.model.dto;
 
 import com.example.oqp.common.enums.Role;
+import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.model.entity.ContentEntity;
 import lombok.*;
 
@@ -33,6 +34,6 @@ public class UserDto {
 
     private String email;
 
-    private List<ContentEntity> content;
+    private List<ContentDto> content;
 
 }
