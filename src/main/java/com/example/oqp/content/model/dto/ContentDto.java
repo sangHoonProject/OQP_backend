@@ -16,8 +16,6 @@ public class ContentDto {
 
     private String title;
 
-    private String content;
-
     private String frontImage;
 
     private String writer;
