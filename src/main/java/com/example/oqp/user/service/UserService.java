@@ -8,6 +8,7 @@ import com.example.oqp.common.security.custom.CustomUserDetailsService;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.common.security.jwt.JwtUtil;
+import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.user.controller.reqeust.*;
 import com.example.oqp.user.model.dto.UserDto;
 import com.example.oqp.user.model.entity.UserEntity;
@@ -30,6 +31,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +48,7 @@ public class UserService {
     @Value("${spring.mail.username}")
     private String from;
 
-    public UserEntity register(RegisterRequest registerRequest) {
+    public UserDto register(RegisterRequest registerRequest) {
 
         if(userRepository.existsByUserId(registerRequest.getUserId())){
             throw new CustomException(ErrorCode.ALREADY_SAVE_ID);
@@ -55,7 +58,20 @@ public class UserService {
         }
 
         UserEntity user = toUserEntity(registerRequest);
-        return userRepository.save(user);
+        UserEntity save = userRepository.save(user);
+        return UserDto.builder()
+                .id(save.getId())
+                .userId(save.getUserId())
+                .password(save.getPassword())
+                .nickname(save.getNickname())
+                .name(save.getName())
+                .registerAt(save.getRegisterAt())
+                .email(save.getEmail())
+                .star(save.getStar())
+                .postingCount(save.getPostingCount())
+                .role(save.getRole())
+                .content(null)
+                .build();
     }
 
     public JwtLoginResponse login(LoginRequest request) {
@@ -142,6 +158,19 @@ public class UserService {
                 throw new CustomException(ErrorCode.USER_NOT_FOUND);
             }
 
+            List<ContentDto> content = byNickname.getContent().stream()
+                    .map(contentEntity -> {
+                        return ContentDto.builder()
+                                .id(contentEntity.getId())
+                                .title(contentEntity.getTitle())
+                                .frontImage(contentEntity.getFrontImage())
+                                .category(contentEntity.getCategory())
+                                .rating(contentEntity.getRating())
+                                .writer(contentEntity.getWriter())
+                                .createAt(contentEntity.getCreateAt())
+                                .build();
+                    }).collect(Collectors.toList());
+
             return UserDto.builder()
                     .id(byNickname.getId())
                     .userId(byNickname.getUserId())
@@ -149,9 +178,11 @@ public class UserService {
                     .nickname(byNickname.getNickname())
                     .email(byNickname.getEmail())
                     .star(byNickname.getStar())
+                    .name(byNickname.getNickname())
+                    .registerAt(byNickname.getRegisterAt())
                     .postingCount(byNickname.getPostingCount())
                     .role(byNickname.getRole())
-                    .content(byNickname.getContent())
+                    .content(content)
                     .build();
         }catch (Exception e){
             log.error("UserService found Fail : {}", e.getMessage());
@@ -182,7 +213,7 @@ public class UserService {
         }
     }
 
-    public UserEntity modify(Long id, UserModifyRequest modifyRequest, HttpServletRequest request) {
+    public UserDto modify(Long id, UserModifyRequest modifyRequest, HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if(header != null && header.startsWith("Bearer ")){
             String token = header.substring(7);
@@ -198,8 +229,33 @@ public class UserService {
                 String encode = passwordEncoder.encode(modifyUser.getPassword());
                 modifyUser.setPassword(encode);
 
+                List<ContentDto> content = modifyUser.getContent().stream()
+                        .map(contentEntity -> {
+                            return ContentDto.builder()
+                                    .id(contentEntity.getId())
+                                    .title(contentEntity.getTitle())
+                                    .frontImage(contentEntity.getFrontImage())
+                                    .category(contentEntity.getCategory())
+                                    .rating(contentEntity.getRating())
+                                    .writer(contentEntity.getWriter())
+                                    .createAt(contentEntity.getCreateAt())
+                                    .build();
+                        }).collect(Collectors.toList());
+
                 UserEntity save = userRepository.save(modifyUser);
-                return save;
+                return UserDto.builder()
+                        .id(save.getId())
+                        .userId(save.getUserId())
+                        .password(save.getPassword())
+                        .nickname(save.getNickname())
+                        .name(save.getName())
+                        .registerAt(save.getRegisterAt())
+                        .email(save.getEmail())
+                        .star(save.getStar())
+                        .postingCount(save.getPostingCount())
+                        .role(save.getRole())
+                        .content(content)
+                        .build();
             }else{
                 throw new CustomException(ErrorCode.USER_NOT_SAME);
             }
