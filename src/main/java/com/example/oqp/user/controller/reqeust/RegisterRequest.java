@@ -17,6 +17,7 @@ public class RegisterRequest {
 
     @NotBlank
     @Size(min = 10, max = 50)
+    @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_-]{4,19}$")
     private String userId;
 
     @NotBlank
