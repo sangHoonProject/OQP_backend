@@ -5,7 +5,6 @@ import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.user.controller.reqeust.*;
 import com.example.oqp.user.model.dto.UserDto;
-import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,7 +56,7 @@ public class UserController {
             }),
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpServletResponse response) {
         JwtLoginResponse login = userService.login(request);
 
         response.setHeader("Authorization", login.getAccessToken());
