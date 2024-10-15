@@ -5,6 +5,7 @@ import com.example.oqp.common.error.response.ErrorResponse;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.user.controller.reqeust.*;
+import com.example.oqp.user.controller.response.EmailSendResponse;
 import com.example.oqp.user.model.dto.UserDto;
 import com.example.oqp.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -162,8 +163,8 @@ public class UserController {
     @PostMapping("/send-email")
     public ResponseEntity<?> sendEmail(@RequestBody @Valid FindByPasswordRequest request){
 
-        userService.sendEmail(request);
+        EmailSendResponse response = userService.sendEmail(request);
 
-        return ResponseEntity.ok().body("이메일이 전송되었습니다.");
+        return ResponseEntity.ok().body(response);
     }
 }
