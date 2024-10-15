@@ -1,12 +1,17 @@
 package com.example.oqp.common.masking;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
 public class Masking {
 
-    public static String maskingEmail(String email) {
+    public String maskingEmail(String email) {
 
         String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
@@ -24,5 +29,10 @@ public class Masking {
         }
 
         return email;
+    }
+
+    public String maskingPassword(String password) {
+        String masking = password.replaceAll(password, "*");
+        return masking;
     }
 }
