@@ -1,5 +1,6 @@
 package com.example.oqp.content.model.entity;
 
+import com.example.oqp.quiz.model.entity.QuizEntity;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -52,5 +53,8 @@ public class ContentEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity userId;
+
+    @OneToMany(mappedBy = "content")
+    private List<QuizEntity> quizList;
 
 }
