@@ -14,22 +14,9 @@ import java.util.regex.Pattern;
 public class Masking {
 
     public String maskingUserId(String userId){
-        String regex = "^[a-zA-Z][a-zA-Z0-9_-]{4,19}$";
-
-        Matcher matcher = Pattern.compile(regex).matcher(userId);
-        if(matcher.find()){
-            int length = userId.length();
-
-            if(length <= 1){
-                return userId;
-            }
-
-            char[] chars = new char[length - 1];
-            Arrays.fill(chars, '*');
-            return userId.replaceAll(userId, userId.substring(0, 1) + String.valueOf(chars));
-        }
-
-        return userId;
+        String substring = userId.substring(0, 3);
+        String masking = userId.substring(3).replaceAll(".", "*");
+        return substring + masking;
     }
 
     public String maskingEmail(String email) {
@@ -52,8 +39,4 @@ public class Masking {
         return email;
     }
 
-    public String maskingPassword(String password) {
-        String masking = password.replaceAll(password, "*");
-        return masking;
-    }
 }
