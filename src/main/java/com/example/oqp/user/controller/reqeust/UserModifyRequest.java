@@ -15,7 +15,6 @@ import lombok.*;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UserModifyRequest {
 
-    @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_-]{4,19}$")
     private String userId;
 
     private String password;

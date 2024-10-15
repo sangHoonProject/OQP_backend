@@ -17,6 +17,5 @@ public class FindByPasswordRequest {
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
     private String email;
 
-    @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_-]{4,19}$")
     private String userId;
 }
