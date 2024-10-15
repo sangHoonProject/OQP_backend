@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class ContentService {
     private final UserRepository userRepository;
     private String UPLOAD_PATH = "upload/";
 
-    public PaginationResponse<List<ContentEntity>> all(Pageable pageable) {
+    public PaginationResponse<List<ContentDto>> all(Pageable pageable) {
         var list = contentRepository.findAll(pageable);
         var pagination = Pagination.builder()
                 .size(list.getSize())
@@ -43,8 +44,21 @@ public class ContentService {
                 .totalPage(list.getTotalPages())
                 .build();
 
-        PaginationResponse<List<ContentEntity>> page = PaginationResponse.<List<ContentEntity>>builder()
-                .body(list.getContent())
+        List<ContentDto> elements = list.getContent().stream()
+                .map(content -> {
+                    return ContentDto.builder()
+                            .id(content.getId())
+                            .title(content.getTitle())
+                            .frontImage(content.getFrontImage())
+                            .writer(content.getWriter())
+                            .createAt(content.getCreateAt())
+                            .category(content.getCategory())
+                            .rating(content.getRating())
+                            .build();
+                }).collect(Collectors.toList());
+
+        PaginationResponse<List<ContentDto>> page = PaginationResponse.<List<ContentDto>>builder()
+                .body(elements)
                 .pagination(pagination)
                 .build();
 
