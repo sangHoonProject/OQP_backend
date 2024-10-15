@@ -2,6 +2,7 @@ package com.example.oqp.content.controller;
 
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
+import com.example.oqp.content.controller.request.ContentModifyRequest;
 import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.service.ContentService;
@@ -62,6 +63,14 @@ public class ContentController {
         return ResponseEntity.ok(upload);
     }
 
-    
+    @PatchMapping(value = "/modify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> modify(
+            @RequestPart(name = "file") MultipartFile file,
+            @RequestPart(name = "request") ContentModifyRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+
+    ){
+        contentService.modify(userDetails, request, file);
+    }
 
 }
