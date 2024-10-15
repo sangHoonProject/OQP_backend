@@ -1,5 +1,6 @@
 package com.example.oqp.content.service;
 
+import com.example.oqp.common.masking.Masking;
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
 import com.example.oqp.content.model.dto.ContentDto;
@@ -84,6 +85,7 @@ public class ContentService {
 
         ContentEntity content = ContentAddRequest.toEntity(request, path.toString(), user);
         ContentEntity save = contentRepository.save(content);
+
         return ContentDto.builder()
                 .id(save.getId())
                 .title(save.getTitle())
