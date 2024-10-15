@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class UserController {
             })
     })
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerRequest) {
         UserDto register = userService.register(registerRequest);
         return ResponseEntity.status(HttpStatus.OK).body(register);
     }
@@ -140,7 +141,7 @@ public class UserController {
             })
     })
     @PatchMapping("/modify/{id}")
-    public ResponseEntity<?> modify(@PathVariable Long id, @RequestBody UserModifyRequest modifyRequest, HttpServletRequest request){
+    public ResponseEntity<?> modify(@PathVariable Long id, @RequestBody @Valid UserModifyRequest modifyRequest, HttpServletRequest request){
         UserDto modify = userService.modify(id, modifyRequest, request);
 
         return ResponseEntity.ok().body(modify);
@@ -156,7 +157,7 @@ public class UserController {
             })
     })
     @PostMapping("/send-email")
-    public ResponseEntity<?> sendEmail(@RequestBody FindByPasswordRequest request){
+    public ResponseEntity<?> sendEmail(@RequestBody @Valid FindByPasswordRequest request){
 
         userService.sendEmail(request);
 
