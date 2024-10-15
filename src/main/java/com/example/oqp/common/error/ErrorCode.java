@@ -12,7 +12,8 @@ public enum ErrorCode {
     EXPIRED_REFRESH_TOKEN(410, "refresh token 만료"),
 
     ALREADY_SAVE_ID(411, "이미 사용된 user id"),
-    ALREADY_SAVE_NICKNAME(412, "이미 사용된 nickname");
+    ALREADY_SAVE_NICKNAME(412, "이미 사용된 nickname"),
+    USER_VALIDATION(413, "email 형식 또는 user_id 첫글자는 영문 10자 이상 50자 미만으로 만드세요");
 
     private final int status;
     private final String message;
