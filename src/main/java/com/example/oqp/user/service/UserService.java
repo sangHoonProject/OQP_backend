@@ -11,6 +11,7 @@ import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.common.security.jwt.JwtUtil;
 import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.user.controller.reqeust.*;
+import com.example.oqp.user.controller.response.EmailSendResponse;
 import com.example.oqp.user.model.dto.UserDto;
 import com.example.oqp.user.model.entity.UserEntity;
 import com.example.oqp.user.model.repository.UserRepository;
@@ -271,7 +272,7 @@ public class UserService {
         }
     }
 
-    public void sendEmail(FindByPasswordRequest request) {
+    public EmailSendResponse sendEmail(FindByPasswordRequest request) {
         UserEntity user = userRepository.findByUserId(request.getUserId());
         log.info("user : {}", user);
 
@@ -310,6 +311,10 @@ public class UserService {
                 mimeMessageHelper.setFrom(new InternetAddress(from));
 
                 mailSender.send(mimeMessage);
+
+                return EmailSendResponse.builder()
+                        .message("이메일 전송 완료")
+                        .build();
 
             } catch (MessagingException e) {
                 throw new RuntimeException(e);
