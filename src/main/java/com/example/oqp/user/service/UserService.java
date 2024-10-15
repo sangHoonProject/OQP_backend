@@ -3,6 +3,7 @@ package com.example.oqp.user.service;
 import com.example.oqp.common.enums.Role;
 import com.example.oqp.common.error.CustomException;
 import com.example.oqp.common.error.ErrorCode;
+import com.example.oqp.common.masking.Masking;
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.common.security.custom.CustomUserDetailsService;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
@@ -45,10 +46,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
     private final JavaMailSender mailSender;
+    private final Masking masking;
     @Value("${spring.mail.username}")
     private String from;
 
     public UserDto register(RegisterRequest registerRequest) {
+
+        int userIdLength = registerRequest.getEmail().length();
 
         if(userRepository.existsByUserId(registerRequest.getUserId())){
             throw new CustomException(ErrorCode.ALREADY_SAVE_ID);
@@ -59,7 +63,7 @@ public class UserService {
 
         UserEntity user = toUserEntity(registerRequest);
         UserEntity save = userRepository.save(user);
-        return UserDto.builder()
+        UserDto dto = UserDto.builder()
                 .id(save.getId())
                 .userId(save.getUserId())
                 .password(save.getPassword())
@@ -72,6 +76,9 @@ public class UserService {
                 .role(save.getRole())
                 .content(null)
                 .build();
+
+
+        return dto;
     }
 
     public JwtLoginResponse login(LoginRequest request) {
@@ -173,10 +180,10 @@ public class UserService {
 
             return UserDto.builder()
                     .id(byNickname.getId())
-                    .userId(byNickname.getUserId())
+                    .userId(masking.maskingUserId(byNickname.getUserId()))
                     .password(byNickname.getPassword())
                     .nickname(byNickname.getNickname())
-                    .email(byNickname.getEmail())
+                    .email(masking.maskingEmail(byNickname.getEmail()))
                     .star(byNickname.getStar())
                     .name(byNickname.getNickname())
                     .registerAt(byNickname.getRegisterAt())
@@ -245,12 +252,12 @@ public class UserService {
                 UserEntity save = userRepository.save(modifyUser);
                 return UserDto.builder()
                         .id(save.getId())
-                        .userId(save.getUserId())
+                        .userId(masking.maskingUserId(save.getUserId()))
                         .password(save.getPassword())
                         .nickname(save.getNickname())
                         .name(save.getName())
                         .registerAt(save.getRegisterAt())
-                        .email(save.getEmail())
+                        .email(masking.maskingEmail(save.getEmail()))
                         .star(save.getStar())
                         .postingCount(save.getPostingCount())
                         .role(save.getRole())
