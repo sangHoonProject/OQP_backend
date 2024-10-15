@@ -1,5 +1,6 @@
 package com.example.oqp.user.controller;
 
+import com.example.oqp.common.error.ErrorCode;
 import com.example.oqp.common.error.response.ErrorResponse;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
@@ -38,6 +39,9 @@ public class UserController {
             }),
             @ApiResponse(responseCode = "412", description = "이미 가입된 nickname으로 가입 요청시 412 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "413", description = "userId Validation 미충족시 413 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorCode.class))
             })
     })
     @PostMapping("/register")
