@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -162,7 +164,7 @@ public class UserController {
     })
     @PostMapping("/send-email")
     public ResponseEntity<?> sendEmail(@RequestBody @Valid FindByPasswordRequest request){
-
+        log.info(request.toString());
         EmailSendResponse response = userService.sendEmail(request);
 
         return ResponseEntity.ok().body(response);
