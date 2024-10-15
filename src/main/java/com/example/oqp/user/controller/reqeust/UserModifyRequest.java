@@ -1,6 +1,9 @@
 package com.example.oqp.user.controller.reqeust;
 
 import com.example.oqp.user.model.entity.UserEntity;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Getter
@@ -9,7 +12,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UserModifyRequest {
+
     private String userId;
 
     private String password;
@@ -18,6 +23,7 @@ public class UserModifyRequest {
 
     private String name;
 
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
     private String email;
 
     public static UserEntity patch(UserEntity user, UserModifyRequest request) {
