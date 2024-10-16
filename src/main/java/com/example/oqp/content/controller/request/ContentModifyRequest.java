@@ -29,4 +29,16 @@ public class ContentModifyRequest {
         }
         return entity;
     }
+
+    public static ContentEntity toEntity(ContentEntity entity, ContentModifyRequest request) {
+        if(request.getTitle() != null){
+            entity.setTitle(request.getTitle());
+        }
+
+        if(request.getCategory() != null){
+            entity.setCategory(request.getCategory());
+        }
+
+        return entity;
+    }
 }
