@@ -1,5 +1,6 @@
 package com.example.oqp.content.controller;
 
+import com.example.oqp.common.error.response.ErrorResponse;
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
 import com.example.oqp.content.controller.request.ContentModifyRequest;
@@ -63,14 +64,30 @@ public class ContentController {
         return ResponseEntity.ok(upload);
     }
 
+    @Operation(summary = "콘텐츠 수정", description = "콘텐츠 id, title, category를 받아서 수정한다.", security = {
+            @SecurityRequirement(name = "Authorization")
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "수정 성공 . 200 반환", content =  {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentDto.class))
+            }),
+            @ApiResponse(responseCode = "408", description = "요청한 유저가 다를시 408 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "420", description = "수정할 콘텐츠를 찾지 못했을 . 420 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            })
+    })
     @PatchMapping(value = "/modify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> modify(
-            @RequestPart(name = "file") MultipartFile file,
-            @RequestPart(name = "request") ContentModifyRequest request,
+            @RequestPart(name = "file", required = false) MultipartFile file,
+            @RequestPart(name = "request", required = false) ContentModifyRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
 
-    ){
-        contentService.modify(userDetails, request, file);
+    ) throws IOException {
+        ContentDto modify = contentService.modify(userDetails, request, file);
+
+        return ResponseEntity.ok(modify);
     }
 
 }
