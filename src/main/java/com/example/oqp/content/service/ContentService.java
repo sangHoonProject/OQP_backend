@@ -57,6 +57,7 @@ public class ContentService {
                             .createAt(content.getCreateAt())
                             .category(content.getCategory())
                             .rating(content.getRating())
+                            .userId(content.getUserId().getId())
                             .build();
                 }).collect(Collectors.toList());
 
@@ -96,6 +97,7 @@ public class ContentService {
                 .rating(content.getRating())
                 .category(content.getCategory())
                 .createAt(content.getCreateAt())
+                .userId(content.getUserId().getId())
                 .build();
     }
 
@@ -104,31 +106,61 @@ public class ContentService {
         ContentEntity content = contentRepository.findById(request.getId())
                 .orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 
-        String oldUrl = content.getFrontImage();
+        String userId = userDetails.getUsername();
+        UserEntity user = userRepository.findByUserId(userId);
+        log.info("user id : {}", user.getId());
 
-        File directory = new File(UPLOAD_PATH);
-        if (!directory.exists()) {
-            directory.mkdirs();
+        log.info("content : {}", content.getUserId().getId());
+
+        if (content.getUserId().getId() == user.getId()) {
+
+            Path newPath = null;
+
+            if (file != null) {
+                String oldUrl = content.getFrontImage();
+
+                File directory = new File(UPLOAD_PATH);
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                UUID uuid = UUID.randomUUID();
+                String fileName = uuid.toString() + "_" + file.getOriginalFilename();
+                Path path = Paths.get(oldUrl);
+                path.toFile().delete();
+
+                newPath = Paths.get(UPLOAD_PATH + fileName);
+                file.transferTo(newPath);
+                ContentEntity modify = ContentModifyRequest.toEntity(content, request, newPath.toString());
+                ContentEntity save = contentRepository.save(modify);
+
+                return ContentDto.builder()
+                        .id(save.getId())
+                        .title(save.getTitle())
+                        .frontImage(save.getFrontImage())
+                        .writer(save.getWriter())
+                        .createAt(save.getCreateAt())
+                        .category(save.getCategory())
+                        .rating(save.getRating())
+                        .userId(save.getUserId().getId())
+                        .build();
+            }
+            else{
+                ContentEntity modify = ContentModifyRequest.toEntity(content, request);
+                ContentEntity save = contentRepository.save(modify);
+
+                return ContentDto.builder()
+                        .id(save.getId())
+                        .title(save.getTitle())
+                        .frontImage(save.getFrontImage())
+                        .writer(save.getWriter())
+                        .createAt(save.getCreateAt())
+                        .category(save.getCategory())
+                        .rating(save.getRating())
+                        .userId(save.getUserId().getId())
+                        .build();
+            }
+        }else{
+            throw new CustomException(ErrorCode.USER_NOT_SAME);
         }
-        UUID uuid = UUID.randomUUID();
-        String fileName = uuid.toString() + "_" + file.getOriginalFilename();
-        Path path = Paths.get(oldUrl);
-        path.toFile().delete();
-
-        Path newPath = Paths.get(UPLOAD_PATH + fileName);
-        file.transferTo(newPath);
-
-        ContentEntity modify = ContentModifyRequest.toEntity(content, request, newPath.toString());
-        ContentEntity save = contentRepository.save(modify);
-
-        return ContentDto.builder()
-                .id(save.getId())
-                .title(save.getTitle())
-                .frontImage(save.getFrontImage())
-                .writer(save.getWriter())
-                .createAt(save.getCreateAt())
-                .category(save.getCategory())
-                .rating(save.getRating())
-                .build();
     }
 }
