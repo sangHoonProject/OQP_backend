@@ -28,4 +28,6 @@ public class ContentDto {
     private String category;
 
     private Integer rating;
+
+    private Long userId;
 }
