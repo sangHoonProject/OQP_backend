@@ -2,6 +2,7 @@ package com.example.oqp.user.controller;
 
 import com.example.oqp.common.error.ErrorCode;
 import com.example.oqp.common.error.response.ErrorResponse;
+import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.user.controller.reqeust.*;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -113,21 +115,17 @@ public class UserController {
     }
 
     @Operation(summary = "사용자 계정 삭제", security = @SecurityRequirement(name = "Authorization"))
-    @Parameter(name = "id", description = "사용자 고유키(id)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "삭제가 완료되면 200 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
             }),
             @ApiResponse(responseCode = "407", description = "사용자를 찾을 수 없으면 407 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
-            }),
-            @ApiResponse(responseCode = "408", description = "삭제하려는 사용자와 다른 사용자면 408 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
             })
     })
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request){
-        boolean delete = userService.delete(id, request);
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> delete(@AuthenticationPrincipal CustomUserDetails userDetails){
+        boolean delete = userService.delete(userDetails);
         return ResponseEntity.ok().body("삭제 성공");
     }
 
