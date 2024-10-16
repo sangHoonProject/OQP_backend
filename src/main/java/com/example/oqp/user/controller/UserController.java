@@ -114,7 +114,7 @@ public class UserController {
         return ResponseEntity.ok().body(found);
     }
 
-    @Operation(summary = "사용자 계정 삭제", security = @SecurityRequirement(name = "Authorization"))
+    @Operation(summary = "사용자 계정 삭제", description = "사용자 계정 삭제", security = @SecurityRequirement(name = "Authorization"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "삭제가 완료되면 200 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
@@ -129,10 +129,9 @@ public class UserController {
         return ResponseEntity.ok().body("삭제 성공");
     }
 
-    @Operation(summary = "사용자 계정 정보 수정", description = "해더에 있는 토큰으로 같은 사용자인지 검증하고 맞다면 정보를 수정함 수정하지 않는 정보는 null로 요청하면 됌",
+    @Operation(summary = "사용자 계정 정보 수정", description = "인증된 사용자 정보를 가져와서 수정, 수정하지 않을 값은 null로 채워두면 됌",
             security = @SecurityRequirement(name = "Authorization")
     )
-    @Parameter(name = "id", description = "사용자 계정 고유키")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공시 200 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
