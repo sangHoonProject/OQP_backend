@@ -199,27 +199,14 @@ public class UserService {
         }
     }
 
-    public boolean delete(Long id, HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if(header != null && header.startsWith("Bearer ")){
-            String token = header.substring(7);
-            Claims claims = jwtUtil.parseToken(token);
-
-            Long tokenUserId = Long.valueOf(claims.get("id", Integer.class));
-            UserEntity tokenUser = userRepository.findById(tokenUserId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-            UserEntity user = userRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-            if(user.equals(tokenUser)){
-                userRepository.delete(user);
-                return true;
-            }else{
-                throw new CustomException(ErrorCode.USER_NOT_SAME);
-            }
-
-        }else{
-            throw new CustomException(ErrorCode.NOT_FOUND_TOKEN);
+    public boolean delete(CustomUserDetails userDetails) {
+        UserEntity user = userRepository.findByUserId(userDetails.getUsername());
+        if(user == null){
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
+
+        userRepository.delete(user);
+        return true;
     }
 
     public UserDto modify(Long id, UserModifyRequest modifyRequest, HttpServletRequest request) {
