@@ -209,56 +209,41 @@ public class UserService {
         return true;
     }
 
-    public UserDto modify(Long id, UserModifyRequest modifyRequest, HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if(header != null && header.startsWith("Bearer ")){
-            String token = header.substring(7);
-            Claims claims = jwtUtil.parseToken(token);
-
-            Long tokenUserId = Long.valueOf(claims.get("id", Integer.class));
-            UserEntity tokenUser = userRepository.findById(tokenUserId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-            UserEntity user = userRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-            if(user.equals(tokenUser)){
-                UserEntity modifyUser = UserModifyRequest.patch(user, modifyRequest);
-
-                String encode = passwordEncoder.encode(modifyUser.getPassword());
-                modifyUser.setPassword(encode);
-
-                List<ContentDto> content = modifyUser.getContent().stream()
-                        .map(contentEntity -> {
-                            return ContentDto.builder()
-                                    .id(contentEntity.getId())
-                                    .title(contentEntity.getTitle())
-                                    .frontImage(contentEntity.getFrontImage())
-                                    .category(contentEntity.getCategory())
-                                    .rating(contentEntity.getRating())
-                                    .writer(contentEntity.getWriter())
-                                    .createAt(contentEntity.getCreateAt())
-                                    .userId(contentEntity.getUserId().getId())
-                                    .build();
-                        }).collect(Collectors.toList());
-
-                UserEntity save = userRepository.save(modifyUser);
-                return UserDto.builder()
-                        .id(save.getId())
-                        .userId(masking.maskingUserId(save.getUserId()))
-                        .password(save.getPassword())
-                        .nickname(save.getNickname())
-                        .name(save.getName())
-                        .registerAt(save.getRegisterAt())
-                        .email(masking.maskingEmail(save.getEmail()))
-                        .star(save.getStar())
-                        .postingCount(save.getPostingCount())
-                        .role(save.getRole())
-                        .content(content)
-                        .build();
-            }else{
-                throw new CustomException(ErrorCode.USER_NOT_SAME);
-            }
-        }else{
-            throw new CustomException(ErrorCode.NOT_FOUND_TOKEN);
+    public UserDto modify(CustomUserDetails customUserDetails, UserModifyRequest modifyRequest) {
+        UserEntity user = userRepository.findByUserId(customUserDetails.getUsername());
+        if(user == null){
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
+        UserEntity modifyUser = UserModifyRequest.patch(user, modifyRequest);
+
+        UserEntity save = userRepository.save(modifyUser);
+        List<ContentDto> dtos = save.getContent().stream()
+                .map(contentEntity -> {
+                    return ContentDto.builder()
+                            .id(contentEntity.getId())
+                            .title(contentEntity.getTitle())
+                            .frontImage(contentEntity.getFrontImage())
+                            .category(contentEntity.getCategory())
+                            .rating(contentEntity.getRating())
+                            .writer(contentEntity.getWriter())
+                            .createAt(contentEntity.getCreateAt())
+                            .userId(contentEntity.getUserId().getId())
+                            .build();
+                }).collect(Collectors.toList());
+
+        return UserDto.builder()
+                .id(save.getId())
+                .userId(save.getUserId())
+                .nickname(save.getNickname())
+                .password(save.getPassword())
+                .registerAt(save.getRegisterAt())
+                .star(save.getStar())
+                .postingCount(save.getPostingCount())
+                .role(save.getRole())
+                .name(save.getName())
+                .email(save.getEmail())
+                .content(dtos)
+                .build();
     }
 
     public EmailSendResponse sendEmail(FindByPasswordRequest request) {
