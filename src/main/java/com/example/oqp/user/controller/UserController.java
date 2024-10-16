@@ -1,5 +1,6 @@
 package com.example.oqp.user.controller;
 
+import com.example.oqp.common.error.CustomException;
 import com.example.oqp.common.error.ErrorCode;
 import com.example.oqp.common.error.response.ErrorResponse;
 import com.example.oqp.common.security.custom.CustomUserDetails;
@@ -7,6 +8,7 @@ import com.example.oqp.common.security.jwt.JwtAccessResponse;
 import com.example.oqp.common.security.jwt.JwtLoginResponse;
 import com.example.oqp.user.controller.reqeust.*;
 import com.example.oqp.user.controller.response.EmailSendResponse;
+import com.example.oqp.user.controller.response.UserDeleteResponse;
 import com.example.oqp.user.model.dto.UserDto;
 import com.example.oqp.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +48,7 @@ public class UserController {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
             }),
             @ApiResponse(responseCode = "413", description = "userId Validation 미충족시 413 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorCode.class))
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
             })
     })
     @PostMapping("/register")
@@ -117,16 +119,28 @@ public class UserController {
     @Operation(summary = "사용자 계정 삭제", description = "사용자 계정 삭제", security = @SecurityRequirement(name = "Authorization"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "삭제가 완료되면 200 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserDeleteResponse.class))
             }),
             @ApiResponse(responseCode = "407", description = "사용자를 찾을 수 없으면 407 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
-            })
+            }),
+            @ApiResponse(responseCode = "430", description = "사용자 삭제 실패 했을 경우 430 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
     })
     @DeleteMapping("/delete")
     public ResponseEntity<?> delete(@AuthenticationPrincipal CustomUserDetails userDetails){
         boolean delete = userService.delete(userDetails);
-        return ResponseEntity.ok().body("삭제 성공");
+
+        if(delete){
+            UserDeleteResponse response = UserDeleteResponse.builder()
+                    .message("삭제가 완료되었습니다.")
+                    .build();
+            return ResponseEntity.ok().body(response);
+        }
+        else{
+            throw new CustomException(ErrorCode.DELETE_FAIL);
+        }
     }
 
     @Operation(summary = "사용자 계정 정보 수정", description = "인증된 사용자 정보를 가져와서 수정, 수정하지 않을 값은 null로 채워두면 됌",
