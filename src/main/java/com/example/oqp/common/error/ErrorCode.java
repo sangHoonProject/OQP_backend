@@ -15,7 +15,8 @@ public enum ErrorCode {
     ALREADY_SAVE_NICKNAME(412, "이미 사용된 nickname"),
     USER_VALIDATION(413, "email 형식에 맞게 입력하세요"),
 
-    CONTENT_NOT_FOUND(420, "Content를 찾지 못했습니다.");
+    CONTENT_NOT_FOUND(420, "Content를 찾지 못했습니다."),
+    DELETE_FAIL(430, "사용자 삭제에 실패하였습니다.");
 
 
     private final int status;
