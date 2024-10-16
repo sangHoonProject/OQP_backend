@@ -176,6 +176,7 @@ public class UserService {
                                 .rating(contentEntity.getRating())
                                 .writer(contentEntity.getWriter())
                                 .createAt(contentEntity.getCreateAt())
+                                .userId(contentEntity.getUserId().getId())
                                 .build();
                     }).collect(Collectors.toList());
 
@@ -247,6 +248,7 @@ public class UserService {
                                     .rating(contentEntity.getRating())
                                     .writer(contentEntity.getWriter())
                                     .createAt(contentEntity.getCreateAt())
+                                    .userId(contentEntity.getUserId().getId())
                                     .build();
                         }).collect(Collectors.toList());
 
