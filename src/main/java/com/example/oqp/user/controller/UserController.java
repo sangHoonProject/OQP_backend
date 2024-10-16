@@ -137,16 +137,13 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "성공시 200 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
             }),
-            @ApiResponse(responseCode = "408", description = "사용자가 같지 않을 시 408 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
-            }),
-            @ApiResponse(responseCode = "409", description = "토큰이 없을 시 409 반환", content = {
+            @ApiResponse(responseCode = "407", description = "사용자를 찾을 수 없을때 407 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
             })
     })
-    @PatchMapping("/modify/{id}")
-    public ResponseEntity<?> modify(@PathVariable Long id, @RequestBody @Valid UserModifyRequest modifyRequest, HttpServletRequest request){
-        UserDto modify = userService.modify(id, modifyRequest, request);
+    @PatchMapping("/modify")
+    public ResponseEntity<?> modify(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody @Valid UserModifyRequest modifyRequest){
+        UserDto modify = userService.modify(userDetails, modifyRequest);
 
         return ResponseEntity.ok().body(modify);
     }
