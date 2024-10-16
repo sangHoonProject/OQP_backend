@@ -116,7 +116,7 @@ public class UserController {
         return ResponseEntity.ok().body(found);
     }
 
-    @Operation(summary = "사용자 계정 삭제", description = "사용자 계정 삭제", security = @SecurityRequirement(name = "Authorization"))
+    @Operation(summary = "사용자 계정 삭제", description = "access token 필수, 사용자 계정 삭제", security = @SecurityRequirement(name = "Authorization"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "삭제가 완료되면 200 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = UserDeleteResponse.class))
@@ -143,7 +143,7 @@ public class UserController {
         }
     }
 
-    @Operation(summary = "사용자 계정 정보 수정", description = "인증된 사용자 정보를 가져와서 수정, 수정하지 않을 값은 null로 채워두면 됌",
+    @Operation(summary = "사용자 계정 정보 수정", description = "인증된 사용자 정보를 가져와서 수정, 수정하지 않을 값은 null로 채워두면 됌 access token 필수",
             security = @SecurityRequirement(name = "Authorization")
     )
     @ApiResponses(value = {
