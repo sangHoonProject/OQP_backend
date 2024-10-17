@@ -1,10 +1,12 @@
 package com.example.oqp.content.controller.request;
 
 import com.example.oqp.content.model.entity.ContentEntity;
+import com.example.oqp.quiz.controller.request.QuizAddRequest;
 import com.example.oqp.user.model.entity.UserEntity;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
