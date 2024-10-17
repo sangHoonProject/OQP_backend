@@ -7,12 +7,16 @@ import com.example.oqp.content.controller.request.ContentModifyRequest;
 import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.service.ContentService;
+import com.example.oqp.quiz.controller.request.QuizAddRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -46,48 +50,23 @@ public class ContentController {
         return ResponseEntity.ok(all);
     }
 
-    @Operation(summary = "Content 추가", description = "Content 추가", security = {
-            @SecurityRequirement(name = "Authorization")
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "업로드에 성공하면 200 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentDto.class))
-            })
-    })
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> upload(
-            @RequestPart(name = "file") MultipartFile file,
-            @RequestPart(name = "request")ContentAddRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    public ResponseEntity<ContentDto> add(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @Valid @RequestPart(name = "contentRequest") ContentAddRequest contentAddRequest,
+
+            @RequestBody List<QuizAddRequest> quizAddRequests,
+
+            @RequestPart(name = "contentImage") MultipartFile contentImage,
+
+            @Parameter(description = "List형태의 MultipartFile", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MultipartFile.class))))
+            @RequestPart(name = "quizImages") List<MultipartFile> quizImage
             ) throws IOException {
-        ContentDto upload = contentService.upload(file, request, userDetails);
-        return ResponseEntity.ok(upload);
+        ContentDto dto = contentService.add(customUserDetails, contentAddRequest, quizAddRequests, contentImage, quizImage);
+
+        return ResponseEntity.ok(dto);
     }
 
-    @Operation(summary = "콘텐츠 수정", description = "콘텐츠 id, title, category를 받아서 수정한다.", security = {
-            @SecurityRequirement(name = "Authorization")
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "수정 성공 . 200 반환", content =  {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentDto.class))
-            }),
-            @ApiResponse(responseCode = "408", description = "요청한 유저가 다를시 408 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
-            }),
-            @ApiResponse(responseCode = "420", description = "수정할 콘텐츠를 찾지 못했을 . 420 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
-            })
-    })
-    @PatchMapping(value = "/modify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> modify(
-            @RequestPart(name = "file", required = false) MultipartFile file,
-            @RequestPart(name = "request", required = false) ContentModifyRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
 
-    ) throws IOException {
-        ContentDto modify = contentService.modify(userDetails, request, file);
-
-        return ResponseEntity.ok(modify);
-    }
 
 }
