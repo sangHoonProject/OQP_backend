@@ -2,6 +2,7 @@ package com.example.oqp.content.controller.request;
 
 import com.example.oqp.content.model.entity.ContentEntity;
 import com.example.oqp.quiz.controller.request.QuizAddRequest;
+import com.example.oqp.quiz.model.entity.QuizEntity;
 import com.example.oqp.user.model.entity.UserEntity;
 import lombok.*;
 
@@ -18,7 +19,9 @@ public class ContentAddRequest {
 
     private String category;
 
-    public static ContentEntity toEntity(ContentAddRequest contentAddRequest, String path, UserEntity user) {
+    private List<QuizAddRequest> quizAddRequests;
+
+    public static ContentEntity toEntity(ContentAddRequest contentAddRequest, String path, UserEntity user, List<QuizEntity> quiz) {
         return ContentEntity.builder()
                 .title(contentAddRequest.getTitle())
                 .frontImage(path)
@@ -27,6 +30,7 @@ public class ContentAddRequest {
                 .createAt(LocalDateTime.now())
                 .rating(0)
                 .userId(user)
+                .quizList(quiz)
                 .build();
     }
 }
