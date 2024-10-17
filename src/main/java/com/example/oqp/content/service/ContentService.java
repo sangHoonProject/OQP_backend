@@ -75,7 +75,7 @@ public class ContentService {
         return page;
     }
 
-    public ContentDto add(CustomUserDetails customUserDetails, ContentAddRequest contentAddRequest, List<QuizAddRequest> quizAddRequests, MultipartFile contentImage, List<MultipartFile> quizImage) throws IOException {
+    public ContentDto add(CustomUserDetails customUserDetails, ContentAddRequest contentAddRequest, MultipartFile contentImage, List<MultipartFile> quizImage) throws IOException {
         UserEntity user = userRepository.findByUserId(customUserDetails.getUsername());
         if(contentImage != null){
             File contentFile = new File(UPLOAD_CONTENT_PATH);
@@ -90,9 +90,6 @@ public class ContentService {
             log.info("contentPath : {}", contentPath);
 
             contentImage.transferTo(contentPath);
-
-            ContentEntity entity = ContentAddRequest.toEntity(contentAddRequest, contentPath.toString(), user);
-            ContentEntity save = contentRepository.save(entity);
 
             File quizFile = new File(UPLOAD_QUIZ_PATH);
             if(!quizFile.exists()){
@@ -136,15 +133,23 @@ public class ContentService {
             List<QuizEntity> quiz = new ArrayList<>();
             for(Path quizUrl : quizImagePath){
                 if(quizUrl != null){
-                    quiz = quizAddRequests.stream()
+                    quiz = contentAddRequest.getQuizAddRequests().stream()
                             .map((request) -> {
-                                return QuizAddRequest.toQuizEntity(request, quizUrl.toString(), save);
+                                return QuizAddRequest.toQuizEntity(request, quizUrl.toString());
                             })
                             .collect(Collectors.toList());
                 }
             }
 
             List<QuizEntity> quizEntities = quizRepository.saveAll(quiz);
+
+            ContentEntity entity = ContentAddRequest.toEntity(contentAddRequest, contentPath.toString(), user, quizEntities);
+            ContentEntity save = contentRepository.save(entity);
+
+            quizEntities.stream().map((value) -> {
+                 value.setContent(save);
+                return null;
+            });
 
             List<QuizDto> quizDtos = quizEntities.stream()
                     .map((value) -> {
