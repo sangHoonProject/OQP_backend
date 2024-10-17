@@ -16,6 +16,7 @@ public enum ErrorCode {
     USER_VALIDATION(413, "email 형식에 맞게 입력하세요"),
 
     CONTENT_NOT_FOUND(420, "Content를 찾지 못했습니다."),
+    CONTENT_NOT_FOUND_IMAGE(421, "썸네일이 없습니다."),
     DELETE_FAIL(430, "사용자 삭제에 실패하였습니다.");
 
 
