@@ -76,6 +76,9 @@ public class ContentService {
     }
 
     public ContentDto add(CustomUserDetails customUserDetails, ContentAddRequest contentAddRequest, MultipartFile contentImage, List<MultipartFile> quizImage) throws IOException {
+        if(quizImage.size() > contentAddRequest.getQuizAddRequests().size()){
+            throw new CustomException(ErrorCode.QUIZ_IMAGE_OVER);
+        }
         UserEntity user = userRepository.findByUserId(customUserDetails.getUsername());
         if(contentImage != null){
             File contentFile = new File(UPLOAD_CONTENT_PATH);
@@ -130,12 +133,16 @@ public class ContentService {
                         .collect(Collectors.toList());
             }
 
+
+            ContentEntity entity = ContentAddRequest.toEntity(contentAddRequest, contentPath.toString(), user);
+            ContentEntity save = contentRepository.save(entity);
+
             List<QuizEntity> quiz = new ArrayList<>();
             for(Path quizUrl : quizImagePath){
                 if(quizUrl != null){
                     quiz = contentAddRequest.getQuizAddRequests().stream()
                             .map((request) -> {
-                                return QuizAddRequest.toQuizEntity(request, quizUrl.toString());
+                                return QuizAddRequest.toQuizEntity(request, quizUrl.toString(), save);
                             })
                             .collect(Collectors.toList());
                 }
@@ -143,13 +150,8 @@ public class ContentService {
 
             List<QuizEntity> quizEntities = quizRepository.saveAll(quiz);
 
-            ContentEntity entity = ContentAddRequest.toEntity(contentAddRequest, contentPath.toString(), user, quizEntities);
-            ContentEntity save = contentRepository.save(entity);
+            save.setQuizList(quizEntities);
 
-            quizEntities.stream().map((value) -> {
-                 value.setContent(save);
-                return null;
-            });
 
             List<QuizDto> quizDtos = quizEntities.stream()
                     .map((value) -> {
