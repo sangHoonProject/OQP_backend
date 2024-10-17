@@ -17,6 +17,8 @@ public enum ErrorCode {
 
     CONTENT_NOT_FOUND(420, "Content를 찾지 못했습니다."),
     CONTENT_NOT_FOUND_IMAGE(421, "썸네일이 없습니다."),
+    QUIZ_IMAGE_OVER(422, "Quiz 이미지가 Quiz 보다 많습니다."),
+
     DELETE_FAIL(430, "사용자 삭제에 실패하였습니다.");
 
 
