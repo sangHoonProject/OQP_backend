@@ -21,7 +21,7 @@ public class ContentAddRequest {
 
     private List<QuizAddRequest> quizAddRequests;
 
-    public static ContentEntity toEntity(ContentAddRequest contentAddRequest, String path, UserEntity user, List<QuizEntity> quiz) {
+    public static ContentEntity toEntity(ContentAddRequest contentAddRequest, String path, UserEntity user) {
         return ContentEntity.builder()
                 .title(contentAddRequest.getTitle())
                 .frontImage(path)
@@ -30,7 +30,6 @@ public class ContentAddRequest {
                 .createAt(LocalDateTime.now())
                 .rating(0)
                 .userId(user)
-                .quizList(quiz)
                 .build();
     }
 }

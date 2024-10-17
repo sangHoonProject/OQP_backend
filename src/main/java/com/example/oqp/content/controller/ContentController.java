@@ -50,13 +50,25 @@ public class ContentController {
         return ResponseEntity.ok(all);
     }
 
+    @Operation(summary = "Content & Quiz 추가", security = {
+            @SecurityRequirement(name = "Authorization")
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공시 200 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentDto.class))
+            }),
+            @ApiResponse(responseCode = "421", description = "썸네일이 없을시 421 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "422", description = "퀴즈 이미지가 퀴즈 수보다 많을때 422 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            })
+    })
     @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ContentDto> add(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            @Valid @RequestPart(name = "contentRequest") ContentAddRequest contentAddRequest,
-
+            @RequestPart(name = "contentAddRequest") ContentAddRequest contentAddRequest,
             @RequestPart(name = "contentImage") MultipartFile contentImage,
-
             @Parameter(description = "List형태의 MultipartFile", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MultipartFile.class))))
             @RequestPart(name = "quizImages") List<MultipartFile> quizImage
             ) throws IOException {
