@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -53,17 +54,31 @@ public class ContentService {
                 .totalPage(list.getTotalPages())
                 .build();
 
-        List<ContentDto> elements = list.getContent().stream()
-                .map(content -> {
+        List<ContentEntity> content = list.getContent();
+
+        List<ContentDto> elements = content.stream()
+                .map(value -> {
+                    List<QuizDto> dtos = value.getQuizList().stream().map(quiz -> {
+                        return QuizDto.builder()
+                                .id(quiz.getId())
+                                .image(quiz.getImage())
+                                .problem(quiz.getProblem())
+                                .correct(quiz.getCorrect())
+                                .createAt(quiz.getCreateAt())
+                                .contentId(quiz.getContent().getId())
+                                .build();
+                    }).collect(Collectors.toList());
+
                     return ContentDto.builder()
-                            .id(content.getId())
-                            .title(content.getTitle())
-                            .frontImage(content.getFrontImage())
-                            .writer(content.getWriter())
-                            .createAt(content.getCreateAt())
-                            .category(content.getCategory())
-                            .rating(content.getRating())
-                            .userId(content.getUserId().getId())
+                            .id(value.getId())
+                            .title(value.getTitle())
+                            .frontImage(value.getFrontImage())
+                            .writer(value.getWriter())
+                            .createAt(value.getCreateAt())
+                            .category(value.getCategory())
+                            .rating(value.getRating())
+                            .userId(value.getUserId().getId())
+                            .quiz(dtos)
                             .build();
                 }).collect(Collectors.toList());
 
