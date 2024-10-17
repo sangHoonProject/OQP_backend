@@ -37,19 +37,6 @@ public class ContentController {
 
     private final ContentService contentService;
 
-    @Operation(summary = "콘텐츠 전체 조회")
-    @ApiResponses(
-            @ApiResponse(responseCode = "200", description = "성공 시 200 반환", content = {
-                    @Content(mediaType = "application/json", schema = @Schema(implementation = PaginationResponse.class))
-            })
-    )
-    @GetMapping("/all")
-    public ResponseEntity<PaginationResponse<List<ContentDto>>> all(@PageableDefault(size = 10, page = 0, sort = "rating", direction = Sort.Direction.DESC) Pageable pageable){
-        PaginationResponse<List<ContentDto>> all = contentService.all(pageable);
-
-        return ResponseEntity.ok(all);
-    }
-
     @Operation(summary = "Content & Quiz 추가", security = {
             @SecurityRequirement(name = "Authorization")
     })
@@ -75,6 +62,19 @@ public class ContentController {
         ContentDto dto = contentService.add(customUserDetails, contentAddRequest, contentImage, quizImage);
 
         return ResponseEntity.ok(dto);
+    }
+
+    @Operation(summary = "content 전체 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "전체 조회 성공시 200 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = PaginationResponse.class))
+            })
+    })
+    @GetMapping("/all")
+    public ResponseEntity<PaginationResponse<List<ContentDto>>> all(@PageableDefault(size = 20, page = 0)Pageable pageable){
+        PaginationResponse<List<ContentDto>> all = contentService.all(pageable);
+
+        return ResponseEntity.ok(all);
     }
 
 
