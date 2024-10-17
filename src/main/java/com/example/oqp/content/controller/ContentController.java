@@ -55,14 +55,12 @@ public class ContentController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @Valid @RequestPart(name = "contentRequest") ContentAddRequest contentAddRequest,
 
-            @RequestBody List<QuizAddRequest> quizAddRequests,
-
             @RequestPart(name = "contentImage") MultipartFile contentImage,
 
             @Parameter(description = "List형태의 MultipartFile", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MultipartFile.class))))
             @RequestPart(name = "quizImages") List<MultipartFile> quizImage
             ) throws IOException {
-        ContentDto dto = contentService.add(customUserDetails, contentAddRequest, quizAddRequests, contentImage, quizImage);
+        ContentDto dto = contentService.add(customUserDetails, contentAddRequest, contentImage, quizImage);
 
         return ResponseEntity.ok(dto);
     }
