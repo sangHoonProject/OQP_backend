@@ -19,12 +19,13 @@ public class QuizAddRequest {
 
     private String correct;
 
-    public static QuizEntity toQuizEntity(QuizAddRequest quizAddRequest, String path) {
+    public static QuizEntity toQuizEntity(QuizAddRequest quizAddRequest, String path, ContentEntity contentEntity) {
         return QuizEntity.builder()
                 .problem(quizAddRequest.getProblem())
                 .image(path)
                 .correct(quizAddRequest.getCorrect())
                 .createAt(LocalDateTime.now())
+                .content(contentEntity)
                 .build();
 
     }
