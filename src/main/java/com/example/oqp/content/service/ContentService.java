@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -199,6 +200,7 @@ public class ContentService {
         }
     }
 
+    @Transactional
     public ContentDto modify(CustomUserDetails customUserDetails, ContentModifyRequest contentRequest, List<QuizModifyRequest> quizRequest, MultipartFile contentImg, List<MultipartFile> quizImgs) throws IOException {
         UserEntity user = userRepository.findByUserId(customUserDetails.getUsername());
         ContentEntity content = contentRepository.findById(contentRequest.getId()).orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND_IMAGE));
