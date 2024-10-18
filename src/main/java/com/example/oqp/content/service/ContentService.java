@@ -4,13 +4,14 @@ import com.example.oqp.common.error.CustomException;
 import com.example.oqp.common.error.ErrorCode;
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
+import com.example.oqp.content.controller.request.ContentModifyRequest;
 import com.example.oqp.content.model.dto.ContentDto;
-import com.example.oqp.content.model.repository.CustomContentRepository;
 import com.example.oqp.content.pagination.Pagination;
 import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.model.entity.ContentEntity;
 import com.example.oqp.content.model.repository.ContentRepository;
 import com.example.oqp.quiz.controller.request.QuizAddRequest;
+import com.example.oqp.quiz.controller.request.QuizModifyRequest;
 import com.example.oqp.quiz.model.dto.QuizDto;
 import com.example.oqp.quiz.model.entity.QuizEntity;
 import com.example.oqp.quiz.model.repository.QuizRepository;
@@ -28,9 +29,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +39,6 @@ import java.util.stream.Stream;
 public class ContentService {
 
     private final ContentRepository contentRepository;
-    private final CustomContentRepository customContentRepository;
     private final QuizRepository quizRepository;
     private final UserRepository userRepository;
     private String UPLOAD_CONTENT_PATH = "upload/content/";
@@ -197,5 +197,163 @@ public class ContentService {
         }else{
             throw new CustomException(ErrorCode.CONTENT_NOT_FOUND_IMAGE);
         }
+    }
+
+    public ContentDto modify(CustomUserDetails customUserDetails, ContentModifyRequest contentRequest, List<QuizModifyRequest> quizRequest, MultipartFile contentImg, List<MultipartFile> quizImgs) throws IOException {
+        UserEntity user = userRepository.findByUserId(customUserDetails.getUsername());
+        ContentEntity content = contentRepository.findById(contentRequest.getId()).orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND_IMAGE));
+
+        if(!user.getId().equals(content.getUserId().getId())){
+            throw new CustomException(ErrorCode.USER_NOT_SAME);
+        }
+
+        String contentPath = null;
+        if(contentImg != null){
+            File contentFile = new File(UPLOAD_CONTENT_PATH);
+            if(!contentFile.exists()){
+                contentFile.mkdirs();
+            }
+
+            UUID uuid = UUID.randomUUID();
+            String contentImageName = uuid.toString() + contentImg.getOriginalFilename();
+            Path path = Paths.get(UPLOAD_CONTENT_PATH + contentImageName);
+
+            contentImg.transferTo(path);
+            contentPath = path.toString();
+        }
+
+        ContentEntity contentEntity = ContentModifyRequest.toEntity(content, contentRequest, contentPath);
+
+        List<MultipartFile> quizImage = new ArrayList<>();
+        if(quizImgs != null){
+            quizImage = quizImgs.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        }
+
+        List<QuizEntity> quizEntities = content.getQuizList();
+        if(!quizImage.isEmpty()){
+            File quizFile = new File(UPLOAD_QUIZ_PATH);
+            if(!quizFile.exists()){
+                quizFile.mkdirs();
+            }
+
+            UUID quizId = UUID.randomUUID();
+            List<Path> quizImagePath = quizImage.stream().map(value -> {
+                String fileName = quizId.toString() + value.getOriginalFilename();
+                Path path = Paths.get(UPLOAD_QUIZ_PATH + fileName);
+                try {
+                    value.transferTo(path);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                return path;
+            }).collect(Collectors.toList());
+
+            List<QuizEntity> quizEntityList = quizEntities.stream().map(entity -> {
+                QuizModifyRequest quizModifyRequest = quizRequest.stream()
+                        .filter(request -> request.getId().equals(entity.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOT_FOUND));
+
+                String quizImageURL = quizImagePath.stream()
+                        .filter(path -> quizModifyRequest.getId().equals(entity.getId()))
+                        .findFirst()
+                        .map(Path::toString)
+                        .orElse(entity.getImage());
+
+                return QuizModifyRequest.toEntity(entity, quizModifyRequest, quizImageURL);
+            }).collect(Collectors.toList());
+
+            List<QuizEntity> quizEntitySave = quizRepository.saveAll(quizEntityList);
+            contentEntity.setQuizList(quizEntitySave);
+            ContentEntity contentSave = contentRepository.save(contentEntity);
+
+            List<QuizDto> quizDtos = contentSave.getQuizList().stream().map(entity -> {
+                return QuizDto.builder()
+                        .id(entity.getId())
+                        .problem(entity.getProblem())
+                        .image(entity.getImage())
+                        .correct(entity.getCorrect())
+                        .createAt(entity.getCreateAt())
+                        .contentId(entity.getContent().getId())
+                        .build();
+            }).collect(Collectors.toList());
+
+            return ContentDto.builder()
+                    .id(contentSave.getId())
+                    .title(contentSave.getTitle())
+                    .frontImage(contentSave.getFrontImage())
+                    .writer(contentSave.getWriter())
+                    .createAt(contentSave.getCreateAt())
+                    .category(contentSave.getCategory())
+                    .rating(contentSave.getRating())
+                    .userId(contentSave.getUserId().getId())
+                    .quiz(quizDtos)
+                    .build();
+
+        }else{
+            if(quizRequest == null){
+                List<QuizDto> quizDtos = contentEntity.getQuizList().stream().map(value -> {
+                    return QuizDto.builder()
+                            .id(value.getId())
+                            .problem(value.getProblem())
+                            .image(value.getImage())
+                            .correct(value.getCorrect())
+                            .createAt(value.getCreateAt())
+                            .contentId(value.getContent().getId())
+                            .build();
+                }).collect(Collectors.toList());
+                log.info("quizDtos : {}", quizDtos.toString());
+
+                return ContentDto.builder()
+                        .id(contentEntity.getId())
+                        .title(contentEntity.getTitle())
+                        .frontImage(contentEntity.getFrontImage())
+                        .writer(contentEntity.getWriter())
+                        .createAt(contentEntity.getCreateAt())
+                        .category(contentEntity.getCategory())
+                        .rating(contentEntity.getRating())
+                        .userId(contentEntity.getUserId().getId())
+                        .quiz(quizDtos)
+                        .build();
+            }
+            List<QuizEntity> quizEntityList = quizEntities.stream().map(entity -> {
+                QuizModifyRequest quizModifyRequest = quizRequest.stream()
+                        .filter(request -> request.getId().equals(entity.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOT_FOUND));
+
+                return QuizModifyRequest.toEntity(entity, quizModifyRequest);
+            }).collect(Collectors.toList());
+
+            quizRepository.saveAll(quizEntityList);
+
+            List<QuizDto> quizDtos = quizEntityList.stream().map(value -> {
+                return QuizDto.builder()
+                        .id(value.getId())
+                        .problem(value.getProblem())
+                        .image(value.getImage())
+                        .correct(value.getCorrect())
+                        .createAt(value.getCreateAt())
+                        .contentId(value.getContent().getId())
+                        .build();
+            }).collect(Collectors.toList());
+
+            log.info("quizDtos : {}", quizDtos.toString());
+
+            return ContentDto.builder()
+                    .id(contentEntity.getId())
+                    .title(contentEntity.getTitle())
+                    .frontImage(contentEntity.getFrontImage())
+                    .writer(contentEntity.getWriter())
+                    .createAt(contentEntity.getCreateAt())
+                    .category(contentEntity.getCategory())
+                    .rating(contentEntity.getRating())
+                    .userId(contentEntity.getUserId().getId())
+                    .quiz(quizDtos)
+                    .build();
+
+        }
+
     }
 }
