@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
+@ToString
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class QuizDto {
 
