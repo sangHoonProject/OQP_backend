@@ -8,6 +8,7 @@ import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.service.ContentService;
 import com.example.oqp.quiz.controller.request.QuizAddRequest;
+import com.example.oqp.quiz.controller.request.QuizModifyRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -20,6 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -75,6 +77,45 @@ public class ContentController {
         PaginationResponse<List<ContentDto>> all = contentService.all(pageable);
 
         return ResponseEntity.ok(all);
+    }
+
+    @PatchMapping(value = "/modify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Content & Quiz 수정", security = {
+            @SecurityRequirement(name = "Authorization")
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "수정 성공시 200 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentDto.class))
+            }),
+            @ApiResponse(responseCode = "408", description = "본인이 추가한 콘텐츠가 아닐 경우 408 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "420", description = "콘텐츠를 찾지 못했을 경우 420 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "423", description = "퀴즈를 찾지 못했을 경우 423 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            })
+    })
+    public ResponseEntity<ContentDto> modify(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+
+            @Parameter(description = "application/json 타입으로 보내면 됌 id 필디는 content 고유키를 의미함 무슨 콘텐츠를 " +
+                    "수정할지 알아야하기 때문에 다른 필드는 null로 설정하더라도 content id는 필수값임 ")
+            @RequestPart(name = "contentRequest", required = false) ContentModifyRequest contentRequest,
+
+            @Parameter(description = "List 형태로 quizRequest를 받음 id필드는 quiz 고유키를 의미함", content = @Content(array = @ArraySchema(schema = @Schema(implementation = QuizAddRequest.class))))
+            @RequestPart(name = "quizRequest", required = false)List<QuizModifyRequest> quizRequest,
+
+            @Parameter(description = "multipart/form-data 으로 보내면 됌")
+            @RequestPart(name = "contentImg", required = false) MultipartFile contentImg,
+
+            @Parameter(description = "List형태의 MultipartFile", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MultipartFile.class))))
+            @RequestPart(name = "quizImgs", required = false) List<MultipartFile> quizImgs
+            ) throws IOException {
+        ContentDto modify = contentService.modify(customUserDetails, contentRequest, quizRequest, contentImg, quizImgs);
+
+        return ResponseEntity.ok(modify);
     }
 
 
