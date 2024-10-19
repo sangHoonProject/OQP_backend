@@ -120,12 +120,13 @@ public class ContentService {
             UUID quizId = UUID.randomUUID();
 
             String fileName = null;
+            String quizImageOriginalFileName = null;
 
             List<String> quizImageName = new ArrayList<>();
             for(MultipartFile file : quizImage){
-                fileName = file.getOriginalFilename();
-                if(fileName != null){
-                    fileName += quizId.toString();
+                quizImageOriginalFileName = file.getOriginalFilename();
+                if(quizImageOriginalFileName != null){
+                    fileName += quizId.toString() + quizImageOriginalFileName;
                     quizImageName.add(fileName);
                 }
             }
