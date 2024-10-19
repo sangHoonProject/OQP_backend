@@ -5,6 +5,8 @@ import com.example.oqp.common.error.ErrorCode;
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
 import com.example.oqp.content.controller.request.ContentModifyRequest;
+import com.example.oqp.content.controller.request.ContentQuizDeleteRequest;
+import com.example.oqp.content.controller.response.ContentQuizDeleteResponse;
 import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.pagination.Pagination;
 import com.example.oqp.content.pagination.PaginationResponse;
@@ -356,6 +358,45 @@ public class ContentService {
                     .build();
 
         }
+
+    }
+
+    @Transactional
+    public ContentQuizDeleteResponse delete(ContentQuizDeleteRequest request, CustomUserDetails customUserDetails) {
+        UserEntity user = userRepository.findByUserId(customUserDetails.getUsername());
+
+        if(user == null){
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        ContentEntity content = contentRepository.findById(request.getContentId()).orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+
+        if(!content.getUserId().getId().equals(user.getId())){
+            throw new CustomException(ErrorCode.USER_NOT_SAME);
+        }
+
+        if(request.getQuizId() != null){
+            if(!content.getId().equals(request.getContentId())){
+                throw new CustomException(ErrorCode.CONTENT_QUIZ_NOT_SAME_ID);
+            }
+            log.info("quiz id : {}", request.getQuizId());
+            QuizEntity quizEntity = quizRepository.findById(request.getQuizId()).orElseThrow(() -> new CustomException(ErrorCode.QUIZ_NOT_FOUND));
+
+            quizRepository.delete(quizEntity);
+
+            return ContentQuizDeleteResponse.builder()
+                    .contentDelete(request.getContentId() + "번 콘텐츠는 그대로 있습니다.")
+                    .quizDelete(request.getQuizId() + "번 퀴즈가 삭제되었습니다.")
+                    .build();
+        }
+
+        quizRepository.deleteByContentId(request.getContentId());
+        contentRepository.delete(content);
+
+        return ContentQuizDeleteResponse.builder()
+                .contentDelete(request.getContentId() + " 콘텐츠가 삭제되었습니다.")
+                .quizDelete(request.getContentId() + "번 콘텐츠의 퀴즈가 삭제되었습니다.")
+                .build();
 
     }
 }
