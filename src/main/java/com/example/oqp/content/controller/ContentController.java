@@ -139,7 +139,9 @@ public class ContentController {
             @ApiResponse(responseCode = "423", description = "퀴즈를 찾지 못했을 경우 423 반환", content = {
                     @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
             }),
-            @ApiResponse(responseCode = "424", description = "Quiz에 연결된 Content ID 가 다르면 424 반환")
+            @ApiResponse(responseCode = "424", description = "Quiz에 연결된 Content ID 가 다르면 424 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            })
     })
     @DeleteMapping("/delete")
     public ResponseEntity<?> delete(
