@@ -4,6 +4,8 @@ import com.example.oqp.common.error.response.ErrorResponse;
 import com.example.oqp.common.security.custom.CustomUserDetails;
 import com.example.oqp.content.controller.request.ContentAddRequest;
 import com.example.oqp.content.controller.request.ContentModifyRequest;
+import com.example.oqp.content.controller.request.ContentQuizDeleteRequest;
+import com.example.oqp.content.controller.response.ContentQuizDeleteResponse;
 import com.example.oqp.content.model.dto.ContentDto;
 import com.example.oqp.content.pagination.PaginationResponse;
 import com.example.oqp.content.service.ContentService;
@@ -118,6 +120,35 @@ public class ContentController {
         return ResponseEntity.ok(modify);
     }
 
+    @Operation(summary = "콘텐츠 & 퀴즈 삭제", description = "Content Id는 필수로 넣어줘야함", security = {
+            @SecurityRequirement(name = "Authorization")
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "삭제 성공시 200 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ContentQuizDeleteResponse.class))
+            }),
+            @ApiResponse(responseCode = "407", description = "사용자를 찾지 못할경우 407 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "408", description = "삭제할 콘텐츠와 유저가 같지 않을 경우 408 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "420", description = "콘텐츠를 삭제하지 못했을 경우 420 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "423", description = "퀴즈를 찾지 못했을 경우 423 반환", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            }),
+            @ApiResponse(responseCode = "424", description = "Quiz에 연결된 Content ID 가 다르면 424 반환")
+    })
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> delete(
+            @RequestBody @Valid ContentQuizDeleteRequest request,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ){
+        ContentQuizDeleteResponse delete = contentService.delete(request, customUserDetails);
 
+        return ResponseEntity.ok(delete);
+    }
 
 }
